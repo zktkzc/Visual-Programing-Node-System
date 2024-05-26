@@ -27,5 +27,5 @@ class Editor(QWidget):
         self.show()
 
     def debug_add_node(self):
-        node = Node()
+        node = Node(title='测试')
         self.view.add_node(node, (0, 0))
