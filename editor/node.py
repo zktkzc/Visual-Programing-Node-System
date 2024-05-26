@@ -51,13 +51,12 @@ class Node(QGraphicsItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable | QGraphicsTextItem.GraphicsItemFlag.ItemIsSelectable)
         self.init_title()
 
-        self.init_node_size()
-
         # exec端口
         if is_pure:
             self._node_height -= 20
             self.init_node_size()
         else:
+            self.init_node_size()
             self.init_exec_ports()
             self._port_index = 1
 
@@ -84,14 +83,11 @@ class Node(QGraphicsItem):
 
     def init_node_size(self):
         param_height = len(self._param_ports) * (self._param_ports[0].port_icon_size + self._port_padding)
-        if self._node_height < param_height:
-            self._node_height += param_height
         for i, port in enumerate(self._param_ports):
             if self._max_param_port_width < port.port_width:
                 self._max_param_port_width = port.port_width
         output_height = len(self._output_ports) * (self._output_ports[0].port_icon_size + self._port_padding)
-        if self._node_height < output_height:
-            self._node_height += output_height
+        self._node_height += max(output_height, param_height)
         for i, port in enumerate(self._output_ports):
             if self._max_output_port_width < port.port_width:
                 self._max_output_port_width = port.port_width

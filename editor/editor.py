@@ -32,10 +32,6 @@ class Editor(QWidget):
     def debug_add_node(self):
         param_ports: list[ParamPort] = []
         param_ports.append(ParamPort('宽度', 'float', '#99ff22'))
-        param_ports.append(ParamPort('高度'*10, 'float', '#99ff22'))
-        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
-        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
-        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
         param_ports.append(ParamPort('高度', 'float', '#99ff22'))
 
         output_params: list[OutputPort] = []
