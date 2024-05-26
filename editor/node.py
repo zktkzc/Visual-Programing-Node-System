@@ -39,6 +39,9 @@ class Node(QGraphicsItem):
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable | QGraphicsTextItem.GraphicsItemFlag.ItemIsSelectable)
         self.init_title()
 
+    def set_scene(self, scene: Scene = None):
+        self._scene = scene
+
     def init_title(self):
         self._title_item = QGraphicsTextItem(self)
         self._title_item.setPlainText(self._title)
@@ -83,12 +86,26 @@ class Node(QGraphicsItem):
         if port.port_type == NodePort.PORT_TYPE_EXEC_IN:
             self.add_exec_in_port(port)
         elif port.port_type == NodePort.PORT_TYPE_EXEC_OUT:
-            self.add_exec_out_port()
+            self.add_exec_out_port(port)
+        elif port.port_type == NodePort.PORT_TYPE_PARAM:
+            self.add_param_port(port)
+        elif port.port_type == NodePort.PORT_TYPE_OUTPUT:
+            self.add_output_param(port)
 
     def add_exec_in_port(self, port: NodePort = None):
         port.setPos(self._port_padding, self._title_height)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
     def add_exec_out_port(self, port: NodePort = None):
-        port.setPos(self._node_width + 0.5 * port.port_icon_size - self._port_padding - port.port_width, self._title_height)
+        port.setPos(self._node_width + 0.5 * port.port_icon_size - self._port_padding - port.port_width,
+                    self._title_height)
+        port.add_to_parent_node(parent_node=self, scene=self._scene)
+
+    def add_param_port(self, port: NodePort = None):
+        port.setPos(self._port_padding, self._title_height + port.port_icon_size + self._port_padding)
+        port.add_to_parent_node(parent_node=self, scene=self._scene)
+
+    def add_output_param(self, port: NodePort = None):
+        port.setPos(self._node_width - port.port_width - self._port_padding,
+                    self._title_height + port.port_icon_size + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)

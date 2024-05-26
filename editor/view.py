@@ -98,4 +98,6 @@ class View(QGraphicsView):
         :return:
         '''
         node.setPos(pos[0], pos[1])
+        node.set_scene(self._scene)
         self._scene.addItem(node)
+
