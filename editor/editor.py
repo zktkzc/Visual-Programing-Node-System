@@ -1,11 +1,14 @@
 '''
 编辑器主体
 '''
+from __future__ import annotations
 
 from PySide6.QtWidgets import QWidget, QBoxLayout
-from view import View
-from scene import Scene
+
 from node import Node
+from node_port import ExecInPort, ExecOutPort
+from scene import Scene
+from view import View
 
 
 class Editor(QWidget):
@@ -27,5 +30,9 @@ class Editor(QWidget):
         self.show()
 
     def debug_add_node(self):
+        exec_in_port = ExecInPort()
+        exec_out_port = ExecOutPort()
         node = Node(title='测试')
+        node.add_exec_in_port(exec_in_port)
+        node.add_exec_out_port(exec_out_port)
         self.view.add_node(node, (0, 0))

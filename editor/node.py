@@ -1,17 +1,20 @@
 '''
 QGraphicsItem的子类
 '''
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
-from PySide6.QtCore import QRectF, Qt
-from PySide6.QtGui import QPainter, QPen, QColor, QBrush, QPainterPath, QFont
+from __future__ import annotations
 
-from config import EditorConfig
+from PySide6.QtCore import QRectF, Qt
+from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+
+from node_port import NodePort
 from scene import Scene
 
 
 class Node(QGraphicsItem):
     def __init__(self, title: str = '', scene: Scene = None, parent=None):
         super().__init__(parent)
+        self._scene = scene
         # 定义node的大小
         self._node_width: float = 240
         self._node_height: float = 160
@@ -29,6 +32,8 @@ class Node(QGraphicsItem):
         self._title_color = Qt.GlobalColor.white
         self._title_padding = 3
         self._title_background_brush = QBrush(QColor('#aa00003f'))
+        # port的边距
+        self._port_padding = 6
 
         self.setFlags(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable | QGraphicsTextItem.GraphicsItemFlag.ItemIsSelectable)
@@ -73,3 +78,17 @@ class Node(QGraphicsItem):
             painter.setPen(self._pen_default)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawPath(node_outline)
+
+    def add_port(self, port: NodePort = None):
+        if port.port_type == NodePort.PORT_TYPE_EXEC_IN:
+            self.add_exec_in_port(port)
+        elif port.port_type == NodePort.PORT_TYPE_EXEC_OUT:
+            self.add_exec_out_port()
+
+    def add_exec_in_port(self, port: NodePort = None):
+        port.setPos(self._port_padding, self._title_height)
+        port.add_to_parent_node(parent_node=self, scene=self._scene)
+
+    def add_exec_out_port(self, port: NodePort = None):
+        port.setPos(self._node_width + 0.5 * port.port_icon_size - self._port_padding - port.port_width, self._title_height)
+        port.add_to_parent_node(parent_node=self, scene=self._scene)

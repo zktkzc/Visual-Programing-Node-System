@@ -1,12 +1,13 @@
 '''
 QGraphicsView的子类，是scene的容器
 '''
+from __future__ import annotations
 
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView
-from node import Node
 
+from node import Node
 from scene import Scene
 
 
@@ -96,5 +97,5 @@ class View(QGraphicsView):
         添加节点
         :return:
         '''
-        self._scene.addItem(node)
         node.setPos(pos[0], pos[1])
+        self._scene.addItem(node)
