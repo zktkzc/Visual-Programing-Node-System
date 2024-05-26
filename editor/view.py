@@ -5,12 +5,13 @@ QGraphicsView的子类，是scene的容器
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView
+from node import Node
 
-import scene
+from scene import Scene
 
 
 class View(QGraphicsView):
-    def __init__(self, scene: scene.Scene, parent=None):
+    def __init__(self, scene: Scene, parent=None):
         super().__init__(parent)
         self._scene = scene
         self.setScene(self._scene)
@@ -89,3 +90,11 @@ class View(QGraphicsView):
     def reset_scale(self):
         self.resetTransform()
         self._view_scale = 1.0
+
+    def add_node(self, node: Node, pos: tuple[float, float] = (0, 0)):
+        '''
+        添加节点
+        :return:
+        '''
+        self._scene.addItem(node)
+        node.setPos(pos[0], pos[1])

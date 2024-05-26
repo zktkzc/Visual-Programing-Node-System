@@ -21,7 +21,7 @@ class Scene(QGraphicsScene):
         self._grid_size = EditorConfig.EDITOR_SCENE_GRID_SIZE
         self._chunk_size = EditorConfig.EDITOR_SCENE_GRID_CHUNK
         # 设置背景大小
-        self.setSceneRect(self._width / 2, self._height / 2, self._width, self._height)
+        self.setSceneRect(-self._width / 2, -self._height / 2, self._width, self._height)
         # 画网格
         self._normal_line_pen = QPen(QColor(EditorConfig.EDITOR_SCENE_GRID_NORMAL_LINE_COLOR))
         self._normal_line_pen.setWidthF(EditorConfig.EDITOR_SCENE_GRID_NORMAL_LINE_WIDTH)
@@ -40,6 +40,11 @@ class Scene(QGraphicsScene):
         painter.drawLines(dark_lines)
 
     def calc_grid_lines(self, rect: Union[PySide6.QtCore.QRectF, PySide6.QtCore.QRect]):
+        '''
+        计算出所有要画的表格线
+        :param rect:
+        :return:
+        '''
         left, right, top, bottom = math.floor(rect.left()), math.floor(rect.right()), math.floor(
             rect.top()), math.floor(rect.bottom())
         # 最左边的线
