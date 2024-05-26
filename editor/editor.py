@@ -30,13 +30,16 @@ class Editor(QWidget):
         self.show()
 
     def debug_add_node(self):
-        exec_in_port = ExecInPort()
-        exec_out_port = ExecOutPort()
-        param_port = ParamPort('宽度', 'float', '#99ff22')
-        output_port = OutputPort('面积', 'float', '#99ff22')
-        node = Node(title='测试')
-        node.add_exec_in_port(exec_in_port)
-        node.add_exec_out_port(exec_out_port)
-        node.add_param_port(param_port)
-        node.add_output_param(output_port)
+        param_ports: list[ParamPort] = []
+        param_ports.append(ParamPort('宽度', 'float', '#99ff22'))
+        param_ports.append(ParamPort('高度'*10, 'float', '#99ff22'))
+        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
+        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
+        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
+        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
+
+        output_params: list[OutputPort] = []
+        output_params.append(OutputPort('面积', 'float', '#99ff22'))
+
+        node = Node(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
         self.view.add_node(node, (0, 0))
