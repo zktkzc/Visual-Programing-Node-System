@@ -1,0 +1,3 @@
+'''
+QGraphicsItem的子类
+'''
