@@ -17,6 +17,8 @@ class Node(QGraphicsItem):
                  parent=None):
         super().__init__(parent)
         self._scene = scene
+        self._exec_in: ExecInPort | None = None
+        self._exec_out: ExecOutPort | None = None
         # 定义node的大小
         self._min_node_width: float = 20
         self._min_node_height: float = 60
@@ -66,12 +68,17 @@ class Node(QGraphicsItem):
         # output端口
         self.init_output_ports()
 
+    def get_exec_in(self) -> ExecInPort:
+        return self._exec_in
+
+    def get_exec_out(self) -> ExecOutPort:
+        return self._exec_out
 
     def init_exec_ports(self):
-        exec_in = ExecInPort()
-        exec_out = ExecOutPort()
-        self.add_port(exec_in)
-        self.add_port(exec_out)
+        self._exec_in = ExecInPort()
+        self._exec_out = ExecOutPort()
+        self.add_port(self._exec_in)
+        self.add_port(self._exec_out)
 
     def init_param_ports(self):
         for i, port in enumerate(self._param_ports):

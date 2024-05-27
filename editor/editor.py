@@ -27,7 +27,7 @@ class Editor(QWidget):
         self.scene = Scene()
         self.view = View(self.scene, self)
         self.layout.addWidget(self.view)
-        # self.debug_add_node()
+        self.debug_add_node()
         self.show()
 
     def debug_add_node(self, pos: tuple[float, float] = (0, 0)):
@@ -40,6 +40,18 @@ class Editor(QWidget):
 
         node = Node(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
         self.view.add_node(node, pos)
+
+        param_ports2: list[ParamPort] = []
+        param_ports2.append(ParamPort('宽度', 'float', '#99ff22'))
+        param_ports2.append(ParamPort('高度', 'float', '#99ff22'))
+
+        output_params2: list[OutputPort] = []
+        output_params2.append(OutputPort('面积', 'float', '#99ff22'))
+        node2 = Node(title='面积', param_ports=param_ports2, output_ports=output_params2, is_pure=False)
+        self.view.add_node(node2, (pos[0] + 300, pos[1] + 200))
+
+        self.view.add_node_edge(output_params[0], param_ports2[0])
+        self.view.add_node_edge(node.get_exec_out(), node2.get_exec_in())
 
     def right_click_add_node(self, mouse_pos):
         '''

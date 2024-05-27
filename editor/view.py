@@ -9,12 +9,16 @@ from PySide6.QtWidgets import QGraphicsView
 
 from node import Node
 from scene import Scene
+from edge import NodeEdge
+from node_port import NodePort
 
 
 class View(QGraphicsView):
     def __init__(self, scene: Scene, parent=None):
         super().__init__(parent)
         self._scene = scene
+        self._nodes: list[Node] = []
+        self._edges: list[NodeEdge] = []
         self.setScene(self._scene)
         self.setRenderHints(
             QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
@@ -100,4 +104,11 @@ class View(QGraphicsView):
         node.setPos(pos[0], pos[1])
         node.set_scene(self._scene)
         self._scene.addItem(node)
+        self._nodes.append(node)
+
+    def add_node_edge(self, src_port: NodePort = None, dest_port: NodePort = None):
+        edge = NodeEdge(self._scene, src_port, dest_port)
+        src_port.fill()
+        dest_port.fill()
+        self._edges.append(edge)
 
