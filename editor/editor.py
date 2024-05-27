@@ -3,10 +3,11 @@
 '''
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QBoxLayout
 
 from node import Node
-from node_port import ExecInPort, ExecOutPort, ParamPort, OutputPort
+from node_port import ParamPort, OutputPort
 from scene import Scene
 from view import View
 
@@ -26,10 +27,10 @@ class Editor(QWidget):
         self.scene = Scene()
         self.view = View(self.scene, self)
         self.layout.addWidget(self.view)
-        self.debug_add_node()
+        # self.debug_add_node()
         self.show()
 
-    def debug_add_node(self):
+    def debug_add_node(self, pos: tuple[float, float] = (0, 0)):
         param_ports: list[ParamPort] = []
         param_ports.append(ParamPort('宽度', 'float', '#99ff22'))
         param_ports.append(ParamPort('高度', 'float', '#99ff22'))
@@ -38,4 +39,18 @@ class Editor(QWidget):
         output_params.append(OutputPort('面积', 'float', '#99ff22'))
 
         node = Node(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
-        self.view.add_node(node, (0, 0))
+        self.view.add_node(node, pos)
+
+    def right_click_add_node(self, mouse_pos):
+        '''
+        右键添加节点
+        :param mouse_pos: 鼠标点击的位置
+        :return:
+        '''
+        self.debug_add_node((mouse_pos.x(), mouse_pos.y()))
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.RightButton:
+            self.right_click_add_node(self.view.mapToScene(event.pos()))  # 将鼠标位置从屏幕映射到scene中的位置
+        else:
+            super().mousePressEvent(event)
