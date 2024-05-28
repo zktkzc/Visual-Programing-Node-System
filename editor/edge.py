@@ -2,7 +2,7 @@
 节点的连接边
 '''
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QPainterPath, QPainter
+from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
 
 from node_port import NodePort
@@ -18,8 +18,8 @@ class NodeEdge(QGraphicsPathItem):
         self._dest_port = dest_port
         self._scene = scene
         # 初始画笔
-        self._edge_color = self._src_port.port_color
-        self._default_pen = QPen(self._edge_color)
+        self._edge_color = self._src_port.port_color if edge_color == '#ffffff' else edge_color
+        self._default_pen = QPen(QColor(self._edge_color))
         self._default_pen.setWidthF(2)
         # 选中投影
         self._shadow = QGraphicsDropShadowEffect()
@@ -68,3 +68,87 @@ class NodeEdge(QGraphicsPathItem):
         else:
             self._shadow.setColor('#00000000')
             self.setGraphicsEffect(self._shadow)
+
+
+class DraggingEdge(QGraphicsPathItem):
+    def __init__(self, parent=None, src_pos: tuple[float, float] = (0, 0), dst_pos: tuple[float, float] = (0, 0),
+                 edge_color: str = '#ffffff', scene: Scene = None, drag_from_src: bool = True):
+        super().__init__(parent)
+        self._src_pos: tuple[float, float] = src_pos
+        self._dst_pos: tuple[float, float] = dst_pos
+        self._scene: Scene = scene
+        self._edge_color: str = edge_color
+        self._drag_from_src: bool = drag_from_src
+        self.src_port: NodePort | None = None
+        self.dst_port: NodePort | None = None
+        # 初始画笔
+        self._default_pen = QPen(QColor(self._edge_color))
+        self._default_pen.setWidthF(2)
+        self.setZValue(-1)
+
+    def paint(self, painter, option, widget=...):
+        self.update_edge_path()
+        painter.setPen(self._default_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(self.path())
+
+    def update_edge_path(self):
+        '''
+        更新连接边的路径
+        :return:
+        '''
+        src_pos: QPointF = QPointF(self._src_pos[0], self._src_pos[1])
+        dest_pos: QPointF = QPointF(self._dst_pos[0], self._dst_pos[1])
+        path = QPainterPath(src_pos)
+        # 计算贝塞尔曲线手柄的长度
+        x_width = abs(src_pos.x() - dest_pos.x()) + 1
+        y_height = abs(src_pos.y() - dest_pos.y())
+        tangent = float(y_height) / x_width * 0.5
+        tangent = tangent if tangent < 1 else 1
+        tangent *= x_width
+        path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
+                     dest_pos)
+        self.setPath(path)
+
+    def update_position(self, pos: tuple[float, float] = (0, 0)):
+        if self._drag_from_src:
+            self._dst_pos = pos
+        else:
+            self._src_pos = pos
+        self.update()
+
+    def set_first_port(self, port: NodePort):
+        if self._drag_from_src:
+            self.src_port = port
+        else:
+            self.dst_port = port
+
+    def set_second_port(self, port: NodePort):
+        if not self._drag_from_src:
+            self.src_port = port
+        else:
+            self.dst_port = port
+
+    def create_node_edge(self):
+        if self.__can_connect():
+            NodeEdge(scene=self._scene, src_port=self.src_port, dest_port=self.dst_port, edge_color=self._edge_color)
+            self.src_port.fill()
+            self.dst_port.fill()
+
+    def __is_pair(self) -> bool:
+        if self.src_port.port_type == NodePort.PORT_TYPE_EXEC_OUT and self.dst_port.port_type == NodePort.PORT_TYPE_EXEC_IN:
+            return True
+        elif self.src_port.port_type == NodePort.PORT_TYPE_OUTPUT and self.dst_port.port_type == NodePort.PORT_TYPE_PARAM:
+            return True
+        return False
+
+    def __can_connect(self) -> bool:
+        '''
+        判断两个端口是否能够连接
+        :param port1:
+        :param port2:
+        :return:
+        '''
+        if self.__is_pair():
+            return True
+        return False

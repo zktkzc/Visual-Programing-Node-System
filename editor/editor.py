@@ -51,7 +51,6 @@ class Editor(QWidget):
         self.view.add_node(node2, (pos[0] + 300, pos[1] + 200))
 
         self.view.add_node_edge(output_params[0], param_ports2[0])
-        self.view.add_node_edge(node.get_exec_out(), node2.get_exec_in())
 
     def right_click_add_node(self, mouse_pos):
         '''

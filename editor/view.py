@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QGraphicsView
 
 from node import Node
 from scene import Scene
-from edge import NodeEdge
+from edge import NodeEdge, DraggingEdge
 from node_port import NodePort
 
 
@@ -27,32 +27,86 @@ class View(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         # 缩放
-        self._zoom_clamp = [0.5, 5]
-        self._zoom_factor = 1.05
-        self._view_scale = 1.0
+        self._zoom_clamp: list[float] = [0.5, 5]
+        self._zoom_factor: float = 1.05
+        self._view_scale: float = 1.0
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         # 画布拖动
-        self._drag_mode = False
+        self._drag_mode: bool = False
+
+        # 可拖动的连接线
+        self._dragging_edge: DraggingEdge | None = None
+        self._drag_edge_mode: bool = False
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
-            self.middle_button_pressed(event)
+            # 鼠标中间点击
+            self.__middle_button_pressed(event)
+        elif event.button() == Qt.MouseButton.LeftButton:
+            # 鼠标左键点击
+            self.__left_button_pressed(event)
         else:
             super().mousePressEvent(event)
 
+    def __left_button_pressed(self, event):
+        mouse_pos = event.pos()
+        item = self.itemAt(mouse_pos)
+        if isinstance(item, NodePort):
+            # 是端口
+            self._drag_edge_mode = True
+            self.__create_dragging_edge(item)
+        else:
+            super().mousePressEvent(event)
+
+    def __create_dragging_edge(self, port: NodePort) -> None:
+        port_pos = port.get_port_pos()
+        if port.port_type == NodePort.PORT_TYPE_EXEC_OUT or port.port_type == NodePort.PORT_TYPE_OUTPUT:
+            drag_from_src = True
+        else:
+            drag_from_src = False
+
+        if self._dragging_edge is None:
+            self._dragging_edge = DraggingEdge(src_pos=(port_pos.x(), port_pos.y()),
+                                               dst_pos=(port_pos.x(), port_pos.y()),
+                                               drag_from_src=drag_from_src, scene=self._scene, edge_color=port.port_color)
+            self._dragging_edge.set_first_port(port)
+            self._scene.addItem(self._dragging_edge)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_edge_mode:
+            cur_pos = self.mapToScene(event.pos())
+            self._dragging_edge.update_position((cur_pos.x(), cur_pos.y()))
+        else:
+            super().mouseMoveEvent(event)
+
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
-            self.middle_button_released(event)
+            self.__middle_button_released(event)
+        elif event.button() == Qt.MouseButton.LeftButton:
+            self.__left_button_released(event)
         else:
             super().mouseReleaseEvent(event)
 
+    def __left_button_released(self, event):
+        if self._drag_edge_mode:
+            self._drag_edge_mode = False
+            item = self.itemAt(event.pos())
+            if isinstance(item, NodePort):
+                self._dragging_edge.set_second_port(item)
+                # 创建一个连接线
+                self._dragging_edge.create_node_edge()
+            # 删除当前连接线
+            self._scene.removeItem(self._dragging_edge)
+            self._dragging_edge = None
+        super().mouseReleaseEvent(event)
+
     def mouseDoubleClickEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
-            self.reset_scale()
+            self.__reset_scale()
         else:
             super().mouseDoubleClickEvent(event)
 
-    def middle_button_pressed(self, event):
+    def __middle_button_pressed(self, event):
         '''
         鼠标中间点击
         :param event:
@@ -73,7 +127,7 @@ class View(QGraphicsView):
                                       Qt.MouseButton.NoButton, event.modifiers())
             super().mousePressEvent(click_event)
 
-    def middle_button_released(self, event):
+    def __middle_button_released(self, event):
         self.setDragMode(QGraphicsView.DragMode.NoDrag)
         self._drag_mode = False
 
@@ -92,7 +146,7 @@ class View(QGraphicsView):
             # 每一次相对于上一次进行缩放
             self.scale(zoom_factor, zoom_factor)
 
-    def reset_scale(self):
+    def __reset_scale(self):
         self.resetTransform()
         self._view_scale = 1.0
 
@@ -111,4 +165,3 @@ class View(QGraphicsView):
         src_port.fill()
         dest_port.fill()
         self._edges.append(edge)
-
