@@ -9,14 +9,18 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 
 from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort
 from scene import Scene
+from edge import NodeEdge
 
 
 class Node(QGraphicsItem):
     def __init__(self, title: str = '', param_ports: list[ParamPort] = None, output_ports: list[OutputPort] = None,
-                 is_pure: bool = False, scene: Scene = None,
-                 parent=None):
+                 is_pure: bool = False, scene: Scene = None, parent=None, node_position: tuple[float, float] = (0, 0),
+                 edges: list[NodeEdge] = None, connected_nodes: list[Node] = None):
         super().__init__(parent)
-        self._scene = scene
+        self._scene: Scene = scene
+        self._node_position: tuple[float, float] = node_position
+        self.edges: list[NodeEdge] = edges if edges is not None else []
+        self._connected_nodes: list[Node] = connected_nodes if connected_nodes is not None else []
         self._exec_in: ExecInPort | None = None
         self._exec_out: ExecOutPort | None = None
         # 定义node的大小
@@ -50,7 +54,10 @@ class Node(QGraphicsItem):
         self._max_output_port_width: float = 0
 
         self.setFlags(
-            QGraphicsItem.GraphicsItemFlag.ItemIsMovable | QGraphicsTextItem.GraphicsItemFlag.ItemIsSelectable)
+            QGraphicsItem.GraphicsItemFlag.ItemIsMovable
+            | QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+            | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
+        )
         self.init_title()
 
         # exec端口
@@ -67,6 +74,18 @@ class Node(QGraphicsItem):
 
         # output端口
         self.init_output_ports()
+
+    def add_connected_node(self, node: Node, edge: NodeEdge):
+        self._connected_nodes.append(node)
+        self.edges.append(edge)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            # 更新连接的边
+            if len(self.edges) > 0:
+                for edge in self.edges:
+                    edge.update()
+        return super().itemChange(change, value)
 
     def get_exec_in(self) -> ExecInPort:
         return self._exec_in

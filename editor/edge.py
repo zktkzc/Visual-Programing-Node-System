@@ -33,8 +33,9 @@ class NodeEdge(QGraphicsPathItem):
 
     def add_to_scene(self):
         self._scene.addItem(self)
-        # 添加到相关的节点中
         # 相关节点的port更新内容
+        self._src_port.add_edge(self, self._dest_port)
+        self._dest_port.add_edge(self, self._src_port)
 
     def update_edge_path(self):
         '''
@@ -45,7 +46,7 @@ class NodeEdge(QGraphicsPathItem):
         dest_pos = self._dest_port.get_port_pos()
         path = QPainterPath(src_pos)
         # 计算贝塞尔曲线手柄的长度
-        x_width = abs(src_pos.x() - dest_pos.x())
+        x_width = abs(src_pos.x() - dest_pos.x()) + 1
         y_height = abs(src_pos.y() - dest_pos.y())
         tangent = float(y_height) / x_width * 0.5
         tangent = tangent if tangent < 1 else 1

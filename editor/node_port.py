@@ -14,6 +14,7 @@ from scene import Scene
 
 if TYPE_CHECKING:
     from node import Node
+    from edge import NodeEdge
 
 
 class NodePort(QGraphicsItem):
@@ -23,26 +24,34 @@ class NodePort(QGraphicsItem):
     PORT_TYPE_OUTPUT = 1004
 
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff',
-                 port_type: int = PORT_TYPE_EXEC_IN, parent=None):
+                 port_type: int = PORT_TYPE_EXEC_IN, parent=None, connected_ports: list[NodePort] = None,
+                 edges: list[NodeEdge] = None):
         super().__init__(parent)
 
-        self._port_label = port_label
+        self._edges: list[NodeEdge] = edges if edges is not None else []
+        self._connected_ports: list[NodePort] = connected_ports if connected_ports is not None else []
+        self._port_label: str = port_label
         self._port_class = port_class
-        self.port_color = port_color
-        self.port_type = port_type
-        self._port_font_size = 12
-        self._port_font = QFont('微软雅黑', self._port_font_size)
-        self.port_icon_size = 20
-        self.port_label_size = len(self._port_label) * self._port_font_size
-        self.port_width = self.port_icon_size + self.port_label_size
+        self.port_color: str = port_color
+        self.port_type: int = port_type
+        self._port_font_size: int = 12
+        self._port_font: QFont = QFont('微软雅黑', self._port_font_size)
+        self.port_icon_size: float = 20
+        self.port_label_size: int = len(self._port_label) * self._port_font_size
+        self.port_width: float = self.port_icon_size + self.port_label_size
 
         # 定义pen和brush
-        self._default_pen = QPen(QColor(self.port_color))
+        self._default_pen: QPen = QPen(QColor(self.port_color))
         self._default_pen.setWidthF(1.5)
-        self._default_brush = QBrush(QColor(self.port_color))
+        self._default_brush: QBrush = QBrush(QColor(self.port_color))
 
         # 是否填充端口
         self._is_filled = False
+
+    def add_edge(self, edge: NodeEdge, port: NodePort):
+        self.parent_node.add_connected_node(port.parent_node, edge)
+        self._edges.append(edge)
+        self._connected_ports.append(port)
 
     def fill(self):
         self._is_filled = True
@@ -64,7 +73,7 @@ class NodePort(QGraphicsItem):
 
     def add_to_parent_node(self, parent_node: Node = None, scene: Scene = None):
         self.setParentItem(parent_node)
-        self._parent_node = parent_node
+        self.parent_node = parent_node
         self._scene = scene
 
 
