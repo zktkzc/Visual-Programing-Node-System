@@ -10,11 +10,11 @@ from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView
 
 from edge import NodeEdge, DraggingEdge
+from node import Node
 from node_port import NodePort
 
 if TYPE_CHECKING:
     from scene import Scene
-    from node import Node
 
 
 class View(QGraphicsView):
@@ -36,12 +36,26 @@ class View(QGraphicsView):
         self._zoom_factor: float = 1.05
         self._view_scale: float = 1.0
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)  # 将画布拖动模式设置为橡皮筋模式，即可以拖动框选多个节点
         # 画布拖动
         self._drag_mode: bool = False
 
         # 可拖动的连接线
         self._dragging_edge: DraggingEdge | None = None
         self._drag_edge_mode: bool = False
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
+            self.delete_selected_items()
+
+    def delete_selected_items(self):
+        # 获得当前选中的items
+        selected_items = self._scene.selectedItems()
+        for item in selected_items:
+            if isinstance(item, Node):
+                item.remove_self()
+            elif isinstance(item, NodeEdge):
+                item.remove_self()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.MiddleButton:
@@ -136,7 +150,10 @@ class View(QGraphicsView):
             super().mousePressEvent(click_event)
 
     def __middle_button_released(self, event):
-        self.setDragMode(QGraphicsView.DragMode.NoDrag)
+        release_event = QMouseEvent(QEvent.Type.MouseButtonRelease, event.localPos(), Qt.MouseButton.LeftButton,
+                                    Qt.MouseButton.NoButton, event.modifiers())
+        super().mouseReleaseEvent(release_event)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self._drag_mode = False
 
     def wheelEvent(self, event):
@@ -174,3 +191,6 @@ class View(QGraphicsView):
 
     def remove_edge(self, edge: NodeEdge):
         self._edges.remove(edge)
+
+    def remove_node(self, node: Node):
+        self._nodes.remove(node)

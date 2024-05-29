@@ -79,7 +79,25 @@ class Node(QGraphicsItem):
         # output端口
         self.init_output_ports()
 
+    def remove_self(self):
+        '''
+        删除自己
+        :return:
+        '''
+        # 删除连接边
+        for edge in self.edges:
+            edge.remove_self()
+        # 删除自己
+        self._scene.removeItem(self)
+        self._scene.get_view().remove_node(self)
+
     def add_connected_node(self, node: Node, edge: NodeEdge):
+        '''
+        添加连接的节点
+        :param node:
+        :param edge:
+        :return:
+        '''
         self._connected_nodes.append(node)
         self.edges.append(edge)
 
