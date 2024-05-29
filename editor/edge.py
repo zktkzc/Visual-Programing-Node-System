@@ -142,6 +142,16 @@ class DraggingEdge(QGraphicsPathItem):
             return True
         return False
 
+    def __not_in_same_node(self):
+        if self.src_port.parent_node == self.dst_port.parent_node:
+            return False
+        return True
+
+    def __has_same_class(self):
+        if self.src_port.port_class == self.dst_port.port_class:
+            return True
+        return False
+
     def __can_connect(self) -> bool:
         '''
         判断两个端口是否能够连接
@@ -149,6 +159,6 @@ class DraggingEdge(QGraphicsPathItem):
         :param port2:
         :return:
         '''
-        if self.__is_pair():
+        if self.__is_pair() and self.__has_same_class() and self.__not_in_same_node():
             return True
         return False

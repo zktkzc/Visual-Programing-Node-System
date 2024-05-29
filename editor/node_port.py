@@ -31,7 +31,7 @@ class NodePort(QGraphicsItem):
         self._edges: list[NodeEdge] = edges if edges is not None else []
         self._connected_ports: list[NodePort] = connected_ports if connected_ports is not None else []
         self._port_label: str = port_label
-        self._port_class = port_class
+        self.port_class = port_class
         self.port_color: str = port_color
         self.port_type: int = port_type
         self._port_font_size: int = 12
