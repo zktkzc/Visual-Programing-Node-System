@@ -10,9 +10,9 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen, QPainter
 from PySide6.QtWidgets import QGraphicsItem
 
-from scene import Scene
 
 if TYPE_CHECKING:
+    from scene import Scene
     from node import Node
     from edge import NodeEdge
 
@@ -45,19 +45,27 @@ class NodePort(QGraphicsItem):
         self._default_pen.setWidthF(1.5)
         self._default_brush: QBrush = QBrush(QColor(self.port_color))
 
-        # 是否填充端口
-        self._is_filled = False
-
     def add_edge(self, edge: NodeEdge, port: NodePort):
+        self.__remove_edge_by_condition()
         self.parent_node.add_connected_node(port.parent_node, edge)
         self._edges.append(edge)
         self._connected_ports.append(port)
 
-    def fill(self):
-        self._is_filled = True
+    def __remove_edge_by_condition(self):
+        if self.port_type == NodePort.PORT_TYPE_EXEC_IN or self.port_type == NodePort.PORT_TYPE_PARAM:
+            # 将已有的连接线删除
+            if len(self._edges) > 0:
+                for edge in self._edges:
+                    edge.remove_self()
 
-    def unfill(self):
-        self._is_filled = False
+    def remove_edge(self, edge: NodeEdge):
+        self._edges.remove(edge)
+        if edge.src_port == self:
+            self._connected_ports.remove(edge.dest_port)
+            self.parent_node.remove_connected_edge(edge.dest_port.parent_node, edge)
+        else:
+            self._connected_ports.remove(edge.src_port)
+            self.parent_node.remove_connected_edge(edge.src_port.parent_node, edge)
 
     @abc.abstractmethod
     def __fill_port(self, painter):
@@ -108,7 +116,7 @@ class ExecPort(NodePort):
         painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(port_outline.simplified())
 
-        if self._is_filled:
+        if len(self._edges) > 0:
             self.__fill_port(painter)
 
 
@@ -141,7 +149,7 @@ class ParamPort(NodePort):
         painter.drawEllipse(QPointF(0.25 * self.port_icon_size, 0.5 * self.port_icon_size), 0.25 * self.port_icon_size,
                             0.25 * self.port_icon_size)
 
-        if self._is_filled:
+        if len(self._edges) > 0:
             self.__fill_port(painter)
 
         # 三角
@@ -193,7 +201,7 @@ class OutputPort(NodePort):
                             0.25 * self.port_icon_size,
                             0.25 * self.port_icon_size)
 
-        if self._is_filled:
+        if len(self._edges) > 0:
             self.__fill_port(painter)
 
         # 三角

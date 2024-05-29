@@ -1,8 +1,10 @@
 '''
 QGraphicsScene的子类
 '''
+from __future__ import annotations
+
 import math
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 import PySide6.QtGui
 from PySide6.QtCore import Qt, QLine
@@ -11,10 +13,14 @@ from PySide6.QtWidgets import QGraphicsScene
 
 from config import EditorConfig
 
+if TYPE_CHECKING:
+    from view import View
+
 
 class Scene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._view: View | None = None
         self.setBackgroundBrush(QBrush(QColor('#212121')))
         self._width = EditorConfig.EDITOR_SCENE_WIDTH
         self._height = EditorConfig.EDITOR_SCENE_HEIGHT
@@ -27,6 +33,12 @@ class Scene(QGraphicsScene):
         self._normal_line_pen.setWidthF(EditorConfig.EDITOR_SCENE_GRID_NORMAL_LINE_WIDTH)
         self._dark_line_pen = QPen(QColor(EditorConfig.EDITOR_SCENE_GRID_DARK_LINE_COLOR))
         self._dark_line_pen.setWidthF(EditorConfig.EDITOR_SCENE_GRID_DARK_LINE_WIDTH)
+
+    def set_view(self, view: View):
+        self._view = view
+
+    def get_view(self) -> View:
+        return self._view
 
     def drawBackground(self, painter: PySide6.QtGui.QPainter,
                        rect: Union[PySide6.QtCore.QRectF, PySide6.QtCore.QRect]) -> None:

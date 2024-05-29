@@ -3,20 +3,25 @@ QGraphicsView的子类，是scene的容器
 '''
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView
 
-from node import Node
-from scene import Scene
 from edge import NodeEdge, DraggingEdge
 from node_port import NodePort
+
+if TYPE_CHECKING:
+    from scene import Scene
+    from node import Node
 
 
 class View(QGraphicsView):
     def __init__(self, scene: Scene, parent=None):
         super().__init__(parent)
         self._scene = scene
+        self._scene.set_view(self)
         self._nodes: list[Node] = []
         self._edges: list[NodeEdge] = []
         self.setScene(self._scene)
@@ -68,7 +73,8 @@ class View(QGraphicsView):
         if self._dragging_edge is None:
             self._dragging_edge = DraggingEdge(src_pos=(port_pos.x(), port_pos.y()),
                                                dst_pos=(port_pos.x(), port_pos.y()),
-                                               drag_from_src=drag_from_src, scene=self._scene, edge_color=port.port_color)
+                                               drag_from_src=drag_from_src, scene=self._scene,
+                                               edge_color=port.port_color)
             self._dragging_edge.set_first_port(port)
             self._scene.addItem(self._dragging_edge)
 
@@ -94,7 +100,9 @@ class View(QGraphicsView):
             if isinstance(item, NodePort):
                 self._dragging_edge.set_second_port(item)
                 # 创建一个连接线
-                self._dragging_edge.create_node_edge()
+                edge = self._dragging_edge.create_node_edge()
+                if edge is not None:
+                    self._edges.append(edge)
             # 删除当前连接线
             self._scene.removeItem(self._dragging_edge)
             self._dragging_edge = None
@@ -162,6 +170,7 @@ class View(QGraphicsView):
 
     def add_node_edge(self, src_port: NodePort = None, dest_port: NodePort = None):
         edge = NodeEdge(self._scene, src_port, dest_port)
-        src_port.fill()
-        dest_port.fill()
         self._edges.append(edge)
+
+    def remove_edge(self, edge: NodeEdge):
+        self._edges.remove(edge)

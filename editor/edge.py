@@ -1,12 +1,18 @@
 '''
 节点的连接边
 '''
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
 
 from node_port import NodePort
-from scene import Scene
+
+if TYPE_CHECKING:
+    from scene import Scene
 
 
 class NodeEdge(QGraphicsPathItem):
@@ -14,11 +20,11 @@ class NodeEdge(QGraphicsPathItem):
                  edge_color: str = '#ffffff', parent=None):
         super().__init__(parent)
 
-        self._src_port = src_port
-        self._dest_port = dest_port
+        self.src_port = src_port
+        self.dest_port = dest_port
         self._scene = scene
         # 初始画笔
-        self._edge_color = self._src_port.port_color if edge_color == '#ffffff' else edge_color
+        self._edge_color = self.src_port.port_color if edge_color == '#ffffff' else edge_color
         self._default_pen = QPen(QColor(self._edge_color))
         self._default_pen.setWidthF(2)
         # 选中投影
@@ -31,19 +37,25 @@ class NodeEdge(QGraphicsPathItem):
 
         self.add_to_scene()
 
+    def remove_self(self):
+        self._scene.removeItem(self)
+        self._scene.get_view().remove_edge(self)
+        self.src_port.remove_edge(self)
+        self.dest_port.remove_edge(self)
+
     def add_to_scene(self):
         self._scene.addItem(self)
         # 相关节点的port更新内容
-        self._src_port.add_edge(self, self._dest_port)
-        self._dest_port.add_edge(self, self._src_port)
+        self.src_port.add_edge(self, self.dest_port)
+        self.dest_port.add_edge(self, self.src_port)
 
     def update_edge_path(self):
         '''
         更新路径
         :return:
         '''
-        src_pos = self._src_port.get_port_pos()
-        dest_pos = self._dest_port.get_port_pos()
+        src_pos = self.src_port.get_port_pos()
+        dest_pos = self.dest_port.get_port_pos()
         path = QPainterPath(src_pos)
         # 计算贝塞尔曲线手柄的长度
         x_width = abs(src_pos.x() - dest_pos.x()) + 1
@@ -129,11 +141,12 @@ class DraggingEdge(QGraphicsPathItem):
         else:
             self.dst_port = port
 
-    def create_node_edge(self):
+    def create_node_edge(self) -> NodeEdge | None:
         if self.__can_connect():
-            NodeEdge(scene=self._scene, src_port=self.src_port, dest_port=self.dst_port, edge_color=self._edge_color)
-            self.src_port.fill()
-            self.dst_port.fill()
+            edge = NodeEdge(scene=self._scene, src_port=self.src_port, dest_port=self.dst_port,
+                            edge_color=self._edge_color)
+            return edge
+        return None
 
     def __is_pair(self) -> bool:
         if self.src_port.port_type == NodePort.PORT_TYPE_EXEC_OUT and self.dst_port.port_type == NodePort.PORT_TYPE_EXEC_IN:

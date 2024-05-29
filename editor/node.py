@@ -3,13 +3,17 @@ QGraphicsItem的子类
 '''
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 
 from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort
-from scene import Scene
-from edge import NodeEdge
+
+if TYPE_CHECKING:
+    from edge import NodeEdge
+    from scene import Scene
 
 
 class Node(QGraphicsItem):
@@ -78,6 +82,10 @@ class Node(QGraphicsItem):
     def add_connected_node(self, node: Node, edge: NodeEdge):
         self._connected_nodes.append(node)
         self.edges.append(edge)
+
+    def remove_connected_edge(self, node: Node, edge: NodeEdge):
+        self._connected_nodes.remove(node)
+        self.edges.remove(edge)
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
