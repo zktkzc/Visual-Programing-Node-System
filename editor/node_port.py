@@ -69,7 +69,7 @@ class NodePort(QGraphicsItem):
             self.parent_node.remove_connected_edge(edge.src_port.parent_node, edge)
 
     @abc.abstractmethod
-    def __fill_port(self, painter):
+    def _fill_port(self, painter):
         pass
 
     def get_port_pos(self) -> QPointF:
@@ -91,7 +91,7 @@ class ExecPort(NodePort):
                  port_type: int = NodePort.PORT_TYPE_EXEC_IN, parent=None):
         super().__init__(port_label, port_class, port_color, port_type, parent)
 
-    def __fill_port(self, painter):
+    def _fill_port(self, painter):
         port_outline = QPainterPath()
         poly = QPolygonF()
         poly.append(QPointF(1.8, 0.3 * self.port_icon_size))
@@ -118,7 +118,7 @@ class ExecPort(NodePort):
         painter.drawPath(port_outline.simplified())
 
         if len(self._edges) > 0:
-            self.__fill_port(painter)
+            self._fill_port(painter)
 
 
 class ExecInPort(ExecPort):
@@ -139,7 +139,7 @@ class ExecInPort(ExecPort):
         painter.drawPath(port_outline.simplified())
 
         if len(self._edges) > 0:
-            self.__fill_port(painter)
+            self._fill_port(painter)
 
         painter.drawText(
             QRectF(self.port_icon_size, 0.1 * self.port_icon_size, self.port_label_size, self.port_icon_size),
@@ -149,6 +149,22 @@ class ExecInPort(ExecPort):
 class ExecOutPort(ExecPort):
     def __init__(self, port_label: str = ''):
         super().__init__(port_type=NodePort.PORT_TYPE_EXEC_OUT, port_label=port_label)
+
+    def _fill_port(self, painter):
+        port_outline = QPainterPath()
+        poly = QPolygonF()
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 1.8, 0.3 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.2 * self.port_icon_size,
+                            0.3 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.38 * self.port_icon_size,
+                            0.5 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.2 * self.port_icon_size,
+                            0.7 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 1.8, 0.7 * self.port_icon_size))
+        port_outline.addPolygon(poly)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(self.port_color)))
+        painter.drawPath(port_outline.simplified())
 
     def paint(self, painter, option, widget=...):
         painter.setPen(self._default_pen)
@@ -172,7 +188,7 @@ class ExecOutPort(ExecPort):
         painter.drawPath(port_outline.simplified())
 
         if len(self._edges) > 0:
-            self.__fill_port(painter)
+            self._fill_port(painter)
 
     def get_port_pos(self) -> QPointF:
         # 获得本身在scene内的位置
@@ -185,7 +201,7 @@ class ParamPort(NodePort):
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff', parent=None):
         super().__init__(port_label, port_class, port_color, NodePort.PORT_TYPE_PARAM, parent)
 
-    def __fill_port(self, painter):
+    def _fill_port(self, painter):
         # 填充
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor(self.port_color)))
@@ -201,7 +217,7 @@ class ParamPort(NodePort):
                             0.25 * self.port_icon_size)
 
         if len(self._edges) > 0:
-            self.__fill_port(painter)
+            self._fill_port(painter)
 
         # 三角
         poly = QPolygonF()
@@ -223,7 +239,7 @@ class OutputPort(NodePort):
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff', parent=None):
         super().__init__(port_label, port_class, port_color, NodePort.PORT_TYPE_OUTPUT, parent)
 
-    def __fill_port(self, painter):
+    def _fill_port(self, painter):
         # 填充
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor(self.port_color)))
@@ -253,7 +269,7 @@ class OutputPort(NodePort):
                             0.25 * self.port_icon_size)
 
         if len(self._edges) > 0:
-            self.__fill_port(painter)
+            self._fill_port(painter)
 
         # 三角
         poly = QPolygonF()

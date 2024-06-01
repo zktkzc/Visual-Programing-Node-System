@@ -231,15 +231,43 @@ class GraphicNode(QGraphicsItem):
 
 
 class Node(GraphicNode):
-    node_title: str = ''
-    node_description: str = ''
-    input_pins: list[NodeInput] = []
-    output_pins: list[NodeOutput] = []
-
     def __init__(self):
-        in_ports: list[ParamPort] = [pin.port for pin in self.input_pins]
-        out_ports: list[OutputPort] = [pin.port for pin in self.output_pins]
-        super().__init__(title=self.node_title, param_ports=in_ports, output_ports=out_ports, is_pure=True)
+        self._node_title: str = ''
+        self._node_description: str = ''
+        self._input_pins: list[NodeInput] = []
+        self._output_pins: list[NodeOutput] = []
+
+        # 状态
+        self._input_data_ready: bool = False
+        self._output_data_ready: bool = False
+
+        self.setup_node()
+        self.is_validate()
+
+        in_ports: list[ParamPort] = [pin.port for pin in self._input_pins]
+        out_ports: list[OutputPort] = [pin.port for pin in self._output_pins]
+        super().__init__(title=self._node_title, param_ports=in_ports, output_ports=out_ports, is_pure=True)
+
+    @abc.abstractmethod
+    def setup_node(self):
+        pass
+
+    def is_validate(self) -> bool:
+        if self._node_title == '':
+            print('Node: node title could not be empty')
+            return False
+        if self._node_title is None:
+            print('Node: node title could not be None')
+            return False
+        if self._input_pins is None:
+            print('Node: input pins could not be None')
+            return False
+        if len(self._input_pins) == 0:
+            print('Node: input pins could not be empty')
+            return False
+        if self._output_pins is None:
+            self._output_pins = []
+        return True
 
     @abc.abstractmethod
     def run_node(self):
