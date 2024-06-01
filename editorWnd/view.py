@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QGraphicsView, QApplication
 
 from edge import NodeEdge, DraggingEdge, CuttingLine
 from env import ENV
-from node import GraphicNode
+from editorWnd.node import GraphicNode
 from node_port import NodePort
 from widgets import NodeListWidget
 
