@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsItem
 from config import EditorConfig
+from dtypes import DTypes
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -291,11 +292,16 @@ class Pin:
         DATA = 'data'
         EXEC = 'exec'
 
-    def __init__(self, pin_name: str = '', pin_class: str = '', pin_color: str = '#ffffff', pin_type: PinType = ''):
+    def __init__(self, pin_name: str = '', pin_class: str = '', use_default_widget: bool = True, pin_type: PinType = '', pin_widget=None):
         self._pin_name = pin_name
-        self._pin_class = pin_class
-        self._pin_color = pin_color
         self._pin_type = pin_type
+        if self._pin_type == Pin.PinType.DATA:
+            self._pin_class = pin_class
+            self._pin_color = DTypes.Color_Map[pin_class]
+            if use_default_widget:
+                self._pin_widget = DTypes.default_widget[pin_class]
+            else:
+                self._pin_widget = pin_widget
         self.pin_value: Any = None
         self.port: NodePort | None = None
         self.current_session = -1

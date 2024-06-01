@@ -1,3 +1,4 @@
+from editorWnd.dtypes import DTypes
 from editorWnd.node import Node, NodeInput, NodeOutput
 from editorWnd.node_port import Pin
 
@@ -7,10 +8,11 @@ class AddNode(Node):
     node_title = '加法'
     node_description = '基本运算 加法'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'), ]
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+    ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
@@ -25,10 +27,10 @@ class MinusNode(Node):
     node_title = '减法'
     node_description = '基本运算 减法'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'), ]
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float), ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
@@ -43,11 +45,11 @@ class MultiplyNode(Node):
     node_title = '乘法'
     node_description = '基本运算 乘法'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
@@ -62,11 +64,11 @@ class DivideNode(Node):
     node_title = '除法'
     node_description = '基本运算 除法'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
@@ -84,11 +86,11 @@ class GreaterNode(Node):
     node_title = '大于'
     node_description = '比较运算 大于'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool', pin_color='#ff3300'),
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
     ]
 
     def run_node(self):
@@ -97,17 +99,18 @@ class GreaterNode(Node):
         else:
             self.output_pins[0].set_pin_value(False)
 
+
 class LessNode(Node):
     pkg_name = '比较运算'
     node_title = '小于'
     node_description = '比较运算 小于'
     input_pins = [
-        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class='float', pin_color='#99ff22'),
-        ]
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+    ]
     output_pins = [
-        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool', pin_color='#ff3300'),
-        ]
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
+    ]
 
     def run_node(self):
         if self.input_pins[0].get_pin_value() < self.input_pins[1].get_pin_value():
