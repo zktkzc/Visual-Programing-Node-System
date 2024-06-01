@@ -2,14 +2,14 @@ from collections import defaultdict
 from typing import Type
 
 from node_lib import NodeClsLib
-from nodes.BasicCalcNode import AddNode
+from nodes.BasicCalcNode import AddNode, MinusNode, MultiplyNode, DivideNode, GreaterNode, LessNode
 from nodes.BranchNode import BranchNode
 
 
 class ENV:
     @staticmethod
     def init_node_env():
-        NodeClsLib.register_nodes([BranchNode, AddNode])
+        NodeClsLib.register_nodes([BranchNode, AddNode, MinusNode, MultiplyNode, DivideNode, GreaterNode, LessNode])
 
     @staticmethod
     def get_registered_node_cls() -> list[Type]:
