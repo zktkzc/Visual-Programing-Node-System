@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent
-from PySide6.QtWidgets import QGraphicsView, QApplication
+from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget
 
 from edge import NodeEdge, DraggingEdge, CuttingLine
 from env import ENV
@@ -125,7 +125,7 @@ class View(QGraphicsView):
             # 是端口
             self._drag_edge_mode = True
             self.__create_dragging_edge(item)
-        elif item is None:
+        elif not isinstance(item, QGraphicsProxyWidget):
             self.__hide_node_list_widget()
             super().mousePressEvent(event)
         else:
