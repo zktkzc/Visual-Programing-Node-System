@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor
+from PySide6.QtCore import Qt, QPointF, QPoint
+from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
 
 from node_port import NodePort
@@ -179,3 +179,31 @@ class DraggingEdge(QGraphicsPathItem):
         if self.__is_pair() and self.__has_same_class() and self.__not_in_same_node():
             return True
         return False
+
+
+class CuttingLine(QGraphicsPathItem):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.line_points: list[QPointF | QPoint] = []
+        self._pen = QPen(Qt.GlobalColor.red)
+        self._pen.setWidthF(1.5)
+        self._pen.setDashPattern([3, 3])  # 每隔3个像素画一个点，点的大小为3个像素
+
+    def paint(self, painter, option, widget=...):
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # 抗锯齿
+        painter.setPen(self._pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+
+        poly = QPolygonF(self.line_points)
+        painter.drawPolyline(poly)
+
+    def update_points(self, point: QPointF | QPoint):
+        self.line_points.append(point)
+        self.update()
+
+    def remove_intersect_edges(self, edges: list[NodeEdge]):
+        for edge in edges.copy():
+            path = QPainterPath()
+            path.addPolygon(QPolygonF(self.line_points))
+            if edge.collidesWithPath(path):
+                edge.remove_self()

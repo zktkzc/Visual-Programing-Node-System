@@ -6,10 +6,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, QEvent
-from PySide6.QtGui import QPainter, QMouseEvent
-from PySide6.QtWidgets import QGraphicsView
+from PySide6.QtGui import QPainter, QMouseEvent, QPainterPath
+from PySide6.QtWidgets import QGraphicsView, QApplication
 
-from edge import NodeEdge, DraggingEdge
+from edge import NodeEdge, DraggingEdge, CuttingLine
 from node import Node
 from node_port import NodePort
 
@@ -44,6 +44,11 @@ class View(QGraphicsView):
         self._dragging_edge: DraggingEdge | None = None
         self._drag_edge_mode: bool = False
 
+        # 添加cutting line
+        self._cutting_mode: bool = False
+        self._cutting_line = CuttingLine()
+        self._scene.addItem(self._cutting_line)
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
             self.delete_selected_items()
@@ -65,10 +70,18 @@ class View(QGraphicsView):
             # 鼠标左键点击
             self.__left_button_pressed(event)
         elif event.button() == Qt.MouseButton.RightButton:
-            self.setDragMode(QGraphicsView.DragMode.NoDrag)
-            super().mousePressEvent(event)
+            self.__right_button_pressed_process(event)
         else:
             super().mousePressEvent(event)
+
+    def __right_button_pressed_process(self, event):
+        item = self.itemAt(event.pos())
+        if item is None and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self._cutting_mode = True
+            QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)  # 设置鼠标样式为十字架状
+        else:
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
+        super().mousePressEvent(event)
 
     def __left_button_pressed(self, event):
         mouse_pos = event.pos()
@@ -99,6 +112,8 @@ class View(QGraphicsView):
         if self._drag_edge_mode:
             cur_pos = self.mapToScene(event.pos())
             self._dragging_edge.update_position((cur_pos.x(), cur_pos.y()))
+        elif self._cutting_mode:
+            self._cutting_line.update_points(self.mapToScene(event.pos()))
         else:
             super().mouseMoveEvent(event)
 
@@ -108,9 +123,19 @@ class View(QGraphicsView):
         elif event.button() == Qt.MouseButton.LeftButton:
             self.__left_button_released(event)
         elif event.button() == Qt.MouseButton.RightButton:
-            self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+            self.__right_button_released_process(event)
         else:
             super().mouseReleaseEvent(event)
+
+    def __right_button_released_process(self, event):
+        # 获得和cutting line相交的边，并删除
+        self._cutting_line.remove_intersect_edges(self._edges)
+        # 清除cutting line
+        self._cutting_mode = False
+        self._cutting_line.line_points.clear()
+        self._cutting_line.update()
+        QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 
     def __left_button_released(self, event):
         if self._drag_edge_mode:
