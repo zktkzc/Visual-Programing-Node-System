@@ -310,7 +310,7 @@ class Pin:
 
 
 class NodeInput(Pin):
-    def init_port(self):
+    def init_port(self) -> ParamPort:
         if self._pin_type == Pin.PinType.DATA:
             self.port = ParamPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color)
         elif self._pin_type == Pin.PinType.EXEC:
@@ -318,10 +318,11 @@ class NodeInput(Pin):
         else:
             self.port = None
             print('no such kinds of pin type')
+        return self.port
 
 
 class NodeOutput(Pin):
-    def init_port(self):
+    def init_port(self) -> OutputPort:
         if self._pin_type == Pin.PinType.DATA:
             self.port = OutputPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color)
         elif self._pin_type == Pin.PinType.EXEC:
@@ -329,3 +330,4 @@ class NodeOutput(Pin):
         else:
             self.port = None
             print('no such kinds of pin type')
+        return self.port

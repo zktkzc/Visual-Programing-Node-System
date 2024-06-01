@@ -234,46 +234,41 @@ class GraphicNode(QGraphicsItem):
 
 
 class Node(GraphicNode):
-    def __init__(self):
-        self._node_title: str = ''
-        self._node_description: str = ''
-        self._input_pins: list[NodeInput] = []
-        self._output_pins: list[NodeOutput] = []
+    node_title: str = ''
+    node_description: str = ''
+    input_pins: list[NodeInput] = []
+    output_pins: list[NodeOutput] = []
 
+    def __init__(self):
         # 状态
         self._input_data_ready: bool = False
         self._output_data_ready: bool = False
 
-        self.setup_node()
         self.is_validate()
 
-        in_ports: list[ParamPort] = [pin.port for pin in self._input_pins]
-        out_ports: list[OutputPort] = [pin.port for pin in self._output_pins]
-        super().__init__(title=self._node_title, param_ports=in_ports, output_ports=out_ports, is_pure=True)
-
-    @abc.abstractmethod
-    def setup_node(self):
-        pass
+        in_ports: list[ParamPort] = [pin.init_port() for pin in self.input_pins]
+        out_ports: list[OutputPort] = [pin.init_port() for pin in self.output_pins]
+        super().__init__(title=self.node_title, param_ports=in_ports, output_ports=out_ports, is_pure=True)
 
     @abc.abstractmethod
     def run_node(self):
         pass
 
     def is_validate(self) -> bool:
-        if self._node_title == '':
+        if self.node_title == '':
             print('Node: node title could not be empty')
             return False
-        if self._node_title is None:
+        if self.node_title is None:
             print('Node: node title could not be None')
             return False
-        if self._input_pins is None:
+        if self.input_pins is None:
             print('Node: input pins could not be None')
             return False
-        if len(self._input_pins) == 0:
+        if len(self.input_pins) == 0:
             print('Node: input pins could not be empty')
             return False
-        if self._output_pins is None:
-            self._output_pins = []
+        if self.output_pins is None:
+            self.output_pins = []
         return True
 
     def input(self, index: int):
