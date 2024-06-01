@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
 from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort
 
@@ -56,6 +56,10 @@ class Node(QGraphicsItem):
         self._output_ports: list[OutputPort] = output_ports
         self._max_param_port_width: float = 0
         self._max_output_port_width: float = 0
+        # 选中阴影
+        self._shadow = QGraphicsDropShadowEffect()
+        self._shadow.setOffset(0, 0)
+        self._shadow.setBlurRadius(20)
 
         self.setFlags(
             QGraphicsItem.GraphicsItemFlag.ItemIsMovable
@@ -85,7 +89,7 @@ class Node(QGraphicsItem):
         :return:
         '''
         # 删除连接边
-        for edge in self.edges:
+        for edge in self.edges.copy():
             edge.remove_self()
         # 删除自己
         self._scene.removeItem(self)
@@ -164,6 +168,14 @@ class Node(QGraphicsItem):
         return QRectF(0, 0, self._node_width, self._node_height)
 
     def paint(self, painter, option, widget=...) -> None:
+        # 先画选中时的阴影
+        if self.isSelected():
+            self._shadow.setColor(QColor('#cceeee00'))
+            self.setGraphicsEffect(self._shadow)
+        else:
+            self._shadow.setColor(QColor('#00000000'))
+            self.setGraphicsEffect(self._shadow)
+
         # 画背景颜色
         node_outline = QPainterPath()
         node_outline.addRoundedRect(0, 0, self._node_width, self._node_height, self._node_radius, self._node_radius)
@@ -188,10 +200,14 @@ class Node(QGraphicsItem):
             painter.setPen(self._pen_selected)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawPath(node_outline)
+            self._shadow.setColor(Qt.GlobalColor.yellow)
+            self.setGraphicsEffect(self._shadow)
         else:
             painter.setPen(self._pen_default)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawPath(node_outline)
+            self._shadow.setColor(QColor('#00000000'))
+            self.setGraphicsEffect(self._shadow)
 
     def add_port(self, port: NodePort = None, index: int = 0):
         if port.port_type == NodePort.PORT_TYPE_EXEC_IN:

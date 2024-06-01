@@ -59,6 +59,8 @@ class NodePort(QGraphicsItem):
                     edge.remove_self()
 
     def remove_edge(self, edge: NodeEdge):
+        if edge not in self._edges:
+            return
         self._edges.remove(edge)
         if edge.src_port == self:
             self._connected_ports.remove(edge.dest_port)
