@@ -42,12 +42,16 @@ class NodeEdge(QGraphicsPathItem):
         self._scene.get_view().remove_edge(self)
         self.src_port.remove_edge(self)
         self.dest_port.remove_edge(self)
+        self.src_port.update()
+        self.dest_port.update()
 
     def add_to_scene(self):
         self._scene.addItem(self)
         # 相关节点的port更新内容
         self.src_port.add_edge(self, self.dest_port)
         self.dest_port.add_edge(self, self.src_port)
+        self.src_port.update()
+        self.dest_port.update()
 
     def update_edge_path(self):
         '''
