@@ -8,9 +8,9 @@ from PySide6.QtWidgets import QWidget, QBoxLayout
 
 from node import GraphicNode
 from node_port import ParamPort, OutputPort
+from nodes.AddNode import AddNode
 from scene import Scene
 from view import View
-from nodes.BranchNode import BranchNode
 
 
 class Editor(QWidget):
@@ -45,7 +45,7 @@ class Editor(QWidget):
         self.view.add_node(node, pos)
 
     def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):
-        node = BranchNode()
+        node = AddNode()
         self.view.add_node(node, pos)
 
     def right_click_add_node(self, mouse_pos):

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import abc
 import string
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen
@@ -283,9 +283,23 @@ class Pin:
         self._pin_class = pin_class
         self._pin_color = pin_color
         self._pin_type = pin_type
+        self.pin_value: Any = None
         self.port: NodePort | None = None
+        self.current_session = -1
+        self.has_set_val = False
 
         self.init_port()
+
+    def get_pin_value(self) -> Any:
+        return self.pin_value
+
+    def set_pin_value(self, value: Any):
+        self.pin_value = value
+        self.has_set_val = True
+
+    def new_session(self, session):
+        self.current_session = session
+        self.has_set_val = False
 
     def get_pin_type(self) -> PinType:
         return self._pin_type

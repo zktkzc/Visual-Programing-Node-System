@@ -255,6 +255,10 @@ class Node(GraphicNode):
     def setup_node(self):
         pass
 
+    @abc.abstractmethod
+    def run_node(self):
+        pass
+
     def is_validate(self) -> bool:
         if self._node_title == '':
             print('Node: node title could not be empty')
@@ -272,6 +276,26 @@ class Node(GraphicNode):
             self._output_pins = []
         return True
 
-    @abc.abstractmethod
-    def run_node(self):
+    def input(self, index: int):
+        '''
+        通过index获取pin中存储的值，如果pin的值为空，需要从与该port相关联的port中来取值
+        :param index:
+        :return:
+        '''
+        pass
+
+    def output(self, index: int):
+        '''
+        设置输出值，并传递给下一个相连的节点的port
+        :param index:
+        :return:
+        '''
+        pass
+
+    def exec_output(self, index: int):
+        '''
+        执行端口
+        :param index:
+        :return:
+        '''
         pass

@@ -1,11 +1,5 @@
-from __future__ import annotations
-
-import sys
-
-from node import Node, NodeInput, NodeOutput
-from node_port import Pin
-
-sys.path.append('..')
+from editorWnd.node import Node, NodeInput, NodeOutput
+from editorWnd.node_port import Pin
 
 
 class BranchNode(Node):
@@ -23,4 +17,7 @@ class BranchNode(Node):
         ]
 
     def run_node(self):
-        super().run_node()
+        if self._input_pins[1]:
+            self.exec_output(0)
+        else:
+            self.exec_output(1)
