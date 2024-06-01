@@ -8,15 +8,18 @@ from PySide6.QtWidgets import QWidget, QBoxLayout
 
 from node import GraphicNode
 from node_port import ParamPort, OutputPort
-from nodes.AddNode import AddNode
+from nodes.BasicCalcNode import AddNode
+from nodes.BranchNode import BranchNode
 from scene import Scene
 from view import View
+from env import ENV
 
 
 class Editor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setup_editor()
+        ENV.init_node_env()
 
     def setup_editor(self):
         # 窗口位置以及大小
@@ -45,7 +48,7 @@ class Editor(QWidget):
         self.view.add_node(node, pos)
 
     def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):
-        node = AddNode()
+        node = ENV.get_registered_node_cls()[1]()
         self.view.add_node(node, pos)
 
     def right_click_add_node(self, mouse_pos):

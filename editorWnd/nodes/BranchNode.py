@@ -15,9 +15,8 @@ class BranchNode(Node):
         NodeOutput(pin_name='假', pin_type=Pin.PinType.DATA),
     ]
 
-
-def run_node(self):
-    if self._input_pins[1]:
-        self.exec_output(0)
-    else:
-        self.exec_output(1)
+    def run_node(self):
+        if self.input_pins[1]:
+            self.exec_output(0)
+        else:
+            self.exec_output(1)

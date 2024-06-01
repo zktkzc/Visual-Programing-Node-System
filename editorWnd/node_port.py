@@ -112,6 +112,19 @@ class ExecInPort(ExecPort):
     def __init__(self, port_label: str = ''):
         super().__init__(port_type=NodePort.PORT_TYPE_EXEC_IN, port_label=port_label)
 
+    def _fill_port(self, painter):
+        port_outline = QPainterPath()
+        poly = QPolygonF()
+        poly.append(QPointF(1.8, 0.3 * self.port_icon_size))
+        poly.append(QPointF(0.2 * self.port_icon_size, 0.3 * self.port_icon_size))
+        poly.append(QPointF(0.38 * self.port_icon_size, 0.5 * self.port_icon_size))
+        poly.append(QPointF(0.2 * self.port_icon_size, 0.7 * self.port_icon_size))
+        poly.append(QPointF(1.8, 0.7 * self.port_icon_size))
+        port_outline.addPolygon(poly)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(self.port_color)))
+        painter.drawPath(port_outline.simplified())
+
     def paint(self, painter, option, widget=...):
         port_outline = QPainterPath()
         poly = QPolygonF()
