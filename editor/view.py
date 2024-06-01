@@ -10,7 +10,7 @@ from PySide6.QtGui import QPainter, QMouseEvent, QPainterPath
 from PySide6.QtWidgets import QGraphicsView, QApplication
 
 from edge import NodeEdge, DraggingEdge, CuttingLine
-from node import Node
+from node import GraphicNode
 from node_port import NodePort
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ class View(QGraphicsView):
         super().__init__(parent)
         self._scene = scene
         self._scene.set_view(self)
-        self._nodes: list[Node] = []
+        self._nodes: list[GraphicNode] = []
         self._edges: list[NodeEdge] = []
         self.setScene(self._scene)
         self.setRenderHints(
@@ -57,7 +57,7 @@ class View(QGraphicsView):
         # 获得当前选中的items
         selected_items = self._scene.selectedItems()
         for item in selected_items:
-            if isinstance(item, Node):
+            if isinstance(item, GraphicNode):
                 item.remove_self()
             elif isinstance(item, NodeEdge):
                 item.remove_self()
@@ -205,7 +205,7 @@ class View(QGraphicsView):
         self.resetTransform()
         self._view_scale = 1.0
 
-    def add_node(self, node: Node, pos: tuple[float, float] = (0, 0)):
+    def add_node(self, node: GraphicNode, pos: tuple[float, float] = (0, 0)):
         '''
         添加节点
         :return:
@@ -223,6 +223,6 @@ class View(QGraphicsView):
         if edge in self._edges:
             self._edges.remove(edge)
 
-    def remove_node(self, node: Node):
+    def remove_node(self, node: GraphicNode):
         if node in self._nodes:
             self._nodes.remove(node)

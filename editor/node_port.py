@@ -10,10 +10,9 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen, QPainter
 from PySide6.QtWidgets import QGraphicsItem
 
-
 if TYPE_CHECKING:
     from scene import Scene
-    from node import Node
+    from node import GraphicNode
     from edge import NodeEdge
 
 
@@ -81,7 +80,7 @@ class NodePort(QGraphicsItem):
     def boundingRect(self):
         return QRectF(0, 0, self.port_width, self._port_font_size)
 
-    def add_to_parent_node(self, parent_node: Node = None, scene: Scene = None):
+    def add_to_parent_node(self, parent_node: GraphicNode = None, scene: Scene = None):
         self.setParentItem(parent_node)
         self.parent_node = parent_node
         self._scene = scene
@@ -123,13 +122,13 @@ class ExecPort(NodePort):
 
 
 class ExecInPort(ExecPort):
-    def __init__(self):
-        super().__init__(port_type=NodePort.PORT_TYPE_EXEC_IN)
+    def __init__(self, port_label: str = ''):
+        super().__init__(port_type=NodePort.PORT_TYPE_EXEC_IN, port_label=port_label)
 
 
 class ExecOutPort(ExecPort):
-    def __init__(self):
-        super().__init__(port_type=NodePort.PORT_TYPE_EXEC_OUT)
+    def __init__(self, port_label: str = ''):
+        super().__init__(port_type=NodePort.PORT_TYPE_EXEC_OUT, port_label=port_label)
 
 
 class ParamPort(NodePort):
@@ -214,3 +213,47 @@ class OutputPort(NodePort):
         painter.setBrush(self._default_brush)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawPolygon(poly)
+
+
+class Pin:
+    class PinType:
+        DATA = 'data'
+        EXEC = 'exec'
+
+    def __init__(self, pin_name: str = '', pin_class: str = '', pin_color: str = '#ffffff', pin_type: PinType = ''):
+        self._pin_name = pin_name
+        self._pin_class = pin_class
+        self._pin_color = pin_color
+        self._pin_type = pin_type
+        self.port: NodePort | None = None
+
+        self.init_port()
+
+    def get_pin_type(self) -> PinType:
+        return self._pin_type
+
+    @abc.abstractmethod
+    def init_port(self):
+        pass
+
+
+class NodeInput(Pin):
+    def init_port(self):
+        if self._pin_type == Pin.PinType.DATA:
+            self.port = ParamPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color)
+        elif self._pin_type == Pin.PinType.EXEC:
+            self.port = ExecInPort(port_label=self._pin_name)
+        else:
+            self.port = None
+            print('no such kinds of pin type')
+
+
+class NodeOutput(Pin):
+    def init_port(self):
+        if self._pin_type == Pin.PinType.DATA:
+            self.port = OutputPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color)
+        elif self._pin_type == Pin.PinType.EXEC:
+            self.port = ExecOutPort(port_label=self._pin_name)
+        else:
+            self.port = None
+            print('no such kinds of pin type')

@@ -6,10 +6,11 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QBoxLayout
 
-from node import Node
+from node import GraphicNode
 from node_port import ParamPort, OutputPort
 from scene import Scene
 from view import View
+from nodes.BranchNode import BranchNode
 
 
 class Editor(QWidget):
@@ -40,7 +41,11 @@ class Editor(QWidget):
         output_params.append(OutputPort('面积', 'float', '#99ff22'))
         output_params.append(OutputPort('数量', 'int', '#00ffee'))
 
-        node = Node(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
+        node = GraphicNode(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
+        self.view.add_node(node, pos)
+
+    def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):
+        node = BranchNode()
         self.view.add_node(node, pos)
 
     def right_click_add_node(self, mouse_pos):
@@ -49,7 +54,7 @@ class Editor(QWidget):
         :param mouse_pos: 鼠标点击的位置
         :return:
         '''
-        self.debug_add_node((mouse_pos.x(), mouse_pos.y()))
+        self.debug_add_custom_node((mouse_pos.x(), mouse_pos.y()))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
