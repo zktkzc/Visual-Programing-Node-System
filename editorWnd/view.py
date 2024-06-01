@@ -5,15 +5,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
-from PySide6.QtGui import QPainter, QMouseEvent, QPainterPath
-from PySide6.QtWidgets import QGraphicsView, QApplication, QTreeWidget, QTreeWidgetItem
+from PySide6.QtGui import QPainter, QMouseEvent
+from PySide6.QtWidgets import QGraphicsView, QApplication
 
 from edge import NodeEdge, DraggingEdge, CuttingLine
+from env import ENV
 from node import GraphicNode
 from node_port import NodePort
 from widgets import NodeListWidget
-from env import ENV
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -54,6 +55,7 @@ class View(QGraphicsView):
         # 添加节点选择列表
         self.node_list_widget: NodeListWidget | None = None
         self.__setup_node_list_widget()
+        self._pos_show_node_list_widget: QPoint | QPointF = QPoint(0, 0)
 
     def __setup_node_list_widget(self):
         # 获取data
@@ -62,10 +64,18 @@ class View(QGraphicsView):
         self._scene.addWidget(self.node_list_widget)
         self.node_list_widget.setGeometry(0, 0, 200, 300)
         self.__hide_node_list_widget()
+        self.node_list_widget.itemDoubleClicked.connect(self.__node_selected)
 
-    def __show_node_list_widget_as_pos(self, pos: QPoint | QPointF):
+    def __node_selected(self, item: PySide6.QtWidgets.QTreeWidgetItem, column):
+        if item.data(0, Qt.ItemDataRole.UserRole) is not None:
+            node = item.data(0, Qt.ItemDataRole.UserRole)()
+            self.add_node(node, (self._pos_show_node_list_widget.x(), self._pos_show_node_list_widget.y()))
+            self.__hide_node_list_widget()
+
+    def __show_node_list_widget_at_pos(self, pos: QPoint | QPointF):
         self.node_list_widget.setGeometry(pos.x(), pos.y(), 200, 300)
         self.node_list_widget.show()
+        self._pos_show_node_list_widget = pos
 
     def __hide_node_list_widget(self):
         self.node_list_widget.setVisible(False)
@@ -103,7 +113,7 @@ class View(QGraphicsView):
                 QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)  # 设置鼠标样式为十字架状
             else:
                 # 右键显示节点列表
-                self.__show_node_list_widget_as_pos(self.mapToScene(event.pos()))
+                self.__show_node_list_widget_at_pos(self.mapToScene(event.pos()))
         else:
             self.setDragMode(QGraphicsView.DragMode.NoDrag)
         super().mousePressEvent(event)
