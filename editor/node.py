@@ -10,6 +10,7 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
+from config import EditorConfig
 from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ class GraphicNode(QGraphicsItem):
         self._node_height: float = self._min_node_height
         self._node_radius: float = 10
         # 左右两个端口之间的间距
-        self._port_space: float = 100
+        self._port_space: float = 50
         # node的边框
         self._pen_default = QPen(QColor('#151515'))
         self._pen_selected = QPen(QColor('#aaffee00'))
@@ -45,13 +46,13 @@ class GraphicNode(QGraphicsItem):
         self._title = title
         # 标题的属性
         self._title_height: float = 35
-        self._title_font_size: int = 16
-        self._title_font = QFont('微软雅黑', self._title_font_size)
+        self._title_font_size: int = EditorConfig.EDITOR_NODE_TITLE_FONT_SIZE
+        self._title_font = QFont(EditorConfig.EDITOR_NODE_TITLE_FONT, self._title_font_size)
         self._title_color = Qt.GlobalColor.white
-        self._title_padding: float = 3
+        self._title_padding: float = 5
         self._title_background_brush = QBrush(QColor('#aa00003f'))
         # port的边距
-        self._port_padding: float = 6
+        self._port_padding: float = 7
         self._param_ports: list[ParamPort] = param_ports
         self._output_ports: list[OutputPort] = output_ports
         self._max_param_port_width: float = 0
@@ -150,7 +151,7 @@ class GraphicNode(QGraphicsItem):
         self._title_item.setPlainText(self._title)
         self._title_item.setFont(self._title_font)
         self._title_item.setDefaultTextColor(self._title_color)
-        self._title_item.setPos(self._title_padding, self._title_padding)
+        self._title_item.setPos(self._title_padding, 0)
 
         title_width = self._title_font_size * len(self._title)
         if self._node_width < title_width:
@@ -212,21 +213,23 @@ class GraphicNode(QGraphicsItem):
             self.add_output_param(port, index=index)
 
     def add_exec_in_port(self, port: NodePort = None, index: int = 0):
-        port.setPos(self._port_padding, self._title_height + index * (port.port_icon_size + self._port_padding))
+        port.setPos(self._port_padding,
+                    self._title_height + index * (port.port_icon_size + self._port_padding) + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
     def add_exec_out_port(self, port: NodePort = None, index: int = 0):
         port.setPos(self._node_width - self._port_padding - port.port_width,
-                    self._title_height + index * (port.port_icon_size + self._port_padding))
+                    self._title_height + index * (port.port_icon_size + self._port_padding) + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
     def add_param_port(self, port: NodePort = None, index: int = 0):
-        port.setPos(self._port_padding, self._title_height + index * (port.port_icon_size + self._port_padding))
+        port.setPos(self._port_padding,
+                    self._title_height + index * (port.port_icon_size + self._port_padding) + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
     def add_output_param(self, port: NodePort = None, index: int = 0):
         port.setPos(self._node_width - port.port_width - self._port_padding,
-                    self._title_height + index * (port.port_icon_size + self._port_padding))
+                    self._title_height + index * (port.port_icon_size + self._port_padding) + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
 
