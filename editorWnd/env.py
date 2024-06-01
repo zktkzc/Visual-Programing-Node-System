@@ -13,3 +13,15 @@ class ENV:
     @staticmethod
     def get_registered_node_cls() -> list[Type]:
         return NodeClsLib.node_cls_list
+
+    @staticmethod
+    def get_nodelib_json_data() -> dict[str, dict[str, Type]]:
+        data = {
+            '基础处理': {
+                '相加': AddNode,
+            },
+            '控制结构': {
+                '分支': BranchNode,
+            }
+        }
+        return data

@@ -5,13 +5,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import Qt, QEvent
+from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent, QPainterPath
-from PySide6.QtWidgets import QGraphicsView, QApplication
+from PySide6.QtWidgets import QGraphicsView, QApplication, QTreeWidget, QTreeWidgetItem
 
 from edge import NodeEdge, DraggingEdge, CuttingLine
 from node import GraphicNode
 from node_port import NodePort
+from widgets import NodeListWidget
+from env import ENV
 
 if TYPE_CHECKING:
     from scene import Scene
@@ -49,11 +51,30 @@ class View(QGraphicsView):
         self._cutting_line = CuttingLine()
         self._scene.addItem(self._cutting_line)
 
+        # 添加节点选择列表
+        self.node_list_widget: NodeListWidget | None = None
+        self.__setup_node_list_widget()
+
+    def __setup_node_list_widget(self):
+        # 获取data
+        data = ENV.get_nodelib_json_data()
+        self.node_list_widget = NodeListWidget(data)
+        self._scene.addWidget(self.node_list_widget)
+        self.node_list_widget.setGeometry(0, 0, 200, 300)
+        self.__hide_node_list_widget()
+
+    def __show_node_list_widget_as_pos(self, pos: QPoint | QPointF):
+        self.node_list_widget.setGeometry(pos.x(), pos.y(), 200, 300)
+        self.node_list_widget.show()
+
+    def __hide_node_list_widget(self):
+        self.node_list_widget.setVisible(False)
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
-            self.delete_selected_items()
+            self.__delete_selected_items()
 
-    def delete_selected_items(self):
+    def __delete_selected_items(self):
         # 获得当前选中的items
         selected_items = self._scene.selectedItems()
         for item in selected_items:
@@ -76,9 +97,13 @@ class View(QGraphicsView):
 
     def __right_button_pressed_process(self, event):
         item = self.itemAt(event.pos())
-        if item is None and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self._cutting_mode = True
-            QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)  # 设置鼠标样式为十字架状
+        if item is None:
+            if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+                self._cutting_mode = True
+                QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)  # 设置鼠标样式为十字架状
+            else:
+                # 右键显示节点列表
+                self.__show_node_list_widget_as_pos(self.mapToScene(event.pos()))
         else:
             self.setDragMode(QGraphicsView.DragMode.NoDrag)
         super().mousePressEvent(event)
@@ -90,6 +115,9 @@ class View(QGraphicsView):
             # 是端口
             self._drag_edge_mode = True
             self.__create_dragging_edge(item)
+        elif item is None:
+            self.__hide_node_list_widget()
+            super().mousePressEvent(event)
         else:
             super().mousePressEvent(event)
 
