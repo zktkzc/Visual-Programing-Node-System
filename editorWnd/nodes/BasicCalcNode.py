@@ -3,6 +3,7 @@ from editorWnd.node_port import Pin
 
 
 class AddNode(Node):
+    pkg_name = '基本运算'
     node_title = '加法'
     node_description = '基本运算 加法'
     input_pins = [

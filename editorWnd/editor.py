@@ -18,8 +18,8 @@ from env import ENV
 class Editor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setup_editor()
         ENV.init_node_env()
+        self.setup_editor()
 
     def setup_editor(self):
         # 窗口位置以及大小

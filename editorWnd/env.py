@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Type
 
 from node_lib import NodeClsLib
@@ -16,12 +17,9 @@ class ENV:
 
     @staticmethod
     def get_nodelib_json_data() -> dict[str, dict[str, Type]]:
-        data = {
-            '基础处理': {
-                '相加': AddNode,
-            },
-            '控制结构': {
-                '分支': BranchNode,
-            }
-        }
+        data = defaultdict(dict)
+        for cls in ENV.get_registered_node_cls():
+            pkg_name = cls.pkg_name
+            node_title = cls.node_title
+            data[pkg_name][node_title] = cls
         return data

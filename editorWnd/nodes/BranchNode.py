@@ -3,6 +3,7 @@ from editorWnd.node_port import Pin
 
 
 class BranchNode(Node):
+    pkg_name = '控制结构'
     node_title = '分支'
     node_description = '基于输入条件进行执行'
     input_pins = [

@@ -234,6 +234,7 @@ class GraphicNode(QGraphicsItem):
 
 
 class Node(GraphicNode):
+    pkg_name: str = ''
     node_title: str = ''
     node_description: str = ''
     input_pins: list[NodeInput] = []
