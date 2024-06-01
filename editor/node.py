@@ -10,7 +10,7 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
-from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput, Pin
+from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
 
 if TYPE_CHECKING:
     from edge import NodeEdge
@@ -45,7 +45,7 @@ class GraphicNode(QGraphicsItem):
         self._title = title
         # 标题的属性
         self._title_height: float = 35
-        self._title_font_size: int = 13
+        self._title_font_size: int = 16
         self._title_font = QFont('微软雅黑', self._title_font_size)
         self._title_color = Qt.GlobalColor.white
         self._title_padding: float = 3
@@ -216,7 +216,7 @@ class GraphicNode(QGraphicsItem):
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 
     def add_exec_out_port(self, port: NodePort = None, index: int = 0):
-        port.setPos(self._node_width + 0.5 * port.port_icon_size - self._port_padding - port.port_width,
+        port.setPos(self._node_width - self._port_padding - port.port_width,
                     self._title_height + index * (port.port_icon_size + self._port_padding))
         port.add_to_parent_node(parent_node=self, scene=self._scene)
 

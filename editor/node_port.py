@@ -7,7 +7,7 @@ import abc
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen, QPainter
+from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen
 from PySide6.QtWidgets import QGraphicsItem
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class NodePort(QGraphicsItem):
         self.port_class = port_class
         self.port_color: str = port_color
         self.port_type: int = port_type
-        self._port_font_size: int = 12
+        self._port_font_size: int = 14
         self._port_font: QFont = QFont('微软雅黑', self._port_font_size)
         self.port_icon_size: float = 20
         self.port_label_size: int = len(self._port_label) * self._port_font_size
@@ -125,10 +125,60 @@ class ExecInPort(ExecPort):
     def __init__(self, port_label: str = ''):
         super().__init__(port_type=NodePort.PORT_TYPE_EXEC_IN, port_label=port_label)
 
+    def paint(self, painter, option, widget=...):
+        port_outline = QPainterPath()
+        poly = QPolygonF()
+        poly.append(QPointF(0, 0.2 * self.port_icon_size))
+        poly.append(QPointF(0.25 * self.port_icon_size, 0.2 * self.port_icon_size))
+        poly.append(QPointF(0.5 * self.port_icon_size, 0.5 * self.port_icon_size))
+        poly.append(QPointF(0.25 * self.port_icon_size, 0.8 * self.port_icon_size))
+        poly.append(QPointF(0, 0.8 * self.port_icon_size))
+        port_outline.addPolygon(poly)
+        painter.setPen(self._default_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(port_outline.simplified())
+
+        if len(self._edges) > 0:
+            self.__fill_port(painter)
+
+        painter.drawText(
+            QRectF(self.port_icon_size, 0.1 * self.port_icon_size, self.port_label_size, self.port_icon_size),
+            Qt.AlignmentFlag.AlignLeft, self._port_label)
+
 
 class ExecOutPort(ExecPort):
     def __init__(self, port_label: str = ''):
         super().__init__(port_type=NodePort.PORT_TYPE_EXEC_OUT, port_label=port_label)
+
+    def paint(self, painter, option, widget=...):
+        painter.setPen(self._default_pen)
+        painter.drawText(
+            QRectF(0, 0.1 * self.port_icon_size, self.port_label_size, self.port_icon_size),
+            Qt.AlignmentFlag.AlignRight, self._port_label)
+
+        port_outline = QPainterPath()
+        poly = QPolygonF()
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size, 0.2 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.25 * self.port_icon_size,
+                            0.2 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.5 * self.port_icon_size,
+                            0.5 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0.25 * self.port_icon_size,
+                            0.8 * self.port_icon_size))
+        poly.append(QPointF(self.port_label_size + 0.5 * self.port_icon_size + 0, 0.8 * self.port_icon_size))
+        port_outline.addPolygon(poly)
+        painter.setPen(self._default_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(port_outline.simplified())
+
+        if len(self._edges) > 0:
+            self.__fill_port(painter)
+
+    def get_port_pos(self) -> QPointF:
+        # 获得本身在scene内的位置
+        port_pos = self.scenePos()
+        return QPointF(port_pos.x() + self.port_label_size + 0.75 * self.port_icon_size,
+                       port_pos.y() + 0.5 * self.port_icon_size)
 
 
 class ParamPort(NodePort):
