@@ -122,6 +122,7 @@ class DraggingEdge(QGraphicsPathItem):
         tangent = float(y_height) / x_width * 0.5
         tangent = tangent if tangent < 1 else 1
         tangent *= x_width
+        tangent = tangent if tangent > 100 else 100
         path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
                      dest_pos)
         self.setPath(path)
