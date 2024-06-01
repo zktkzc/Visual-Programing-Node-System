@@ -10,3 +10,5 @@ class NodeClsLib:
             NodeClsLib.node_cls_list.extend(node_cls)
         else:
             NodeClsLib.node_cls_list.append(node_cls)
+        # 去重
+        NodeClsLib.node_cls_list = list(set(NodeClsLib.node_cls_list))

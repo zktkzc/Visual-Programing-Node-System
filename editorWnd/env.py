@@ -1,15 +1,22 @@
+import inspect
+import sys
 from collections import defaultdict
 from typing import Type
 
+import nodes
+from editorWnd.node import Node
 from node_lib import NodeClsLib
-from nodes.BasicCalcNode import AddNode, MinusNode, MultiplyNode, DivideNode, GreaterNode, LessNode
-from nodes.BranchNode import BranchNode
 
 
 class ENV:
     @staticmethod
     def init_node_env():
-        NodeClsLib.register_nodes([BranchNode, AddNode, MinusNode, MultiplyNode, DivideNode, GreaterNode, LessNode])
+        node_cls_lst: list[Type] = []
+        for module_name, _ in inspect.getmembers(nodes, inspect.ismodule):
+            for cls_name, cls in inspect.getmembers(sys.modules[f'nodes.{module_name}'], inspect.isclass):
+                if cls_name != 'Node' and issubclass(cls, Node):
+                    node_cls_lst.append(cls)
+        NodeClsLib.register_nodes(node_cls_lst)
 
     @staticmethod
     def get_registered_node_cls() -> list[Type]:
