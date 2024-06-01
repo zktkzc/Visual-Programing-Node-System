@@ -5,11 +5,12 @@ from __future__ import annotations
 
 import abc
 import string
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Type
 
 from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen
-from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsProxyWidget, QLineEdit, QCheckBox
+
 from config import EditorConfig
 from dtypes import DTypes
 
@@ -27,7 +28,7 @@ class NodePort(QGraphicsItem):
 
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff',
                  port_type: int = PORT_TYPE_EXEC_IN, parent=None, connected_ports: list[NodePort] = None,
-                 edges: list[NodeEdge] = None):
+                 edges: list[NodeEdge] = None, default_widget: Type | None = None):
         super().__init__(parent)
 
         self._edges: list[NodeEdge] = edges if edges is not None else []
@@ -47,6 +48,26 @@ class NodePort(QGraphicsItem):
         self._default_pen: QPen = QPen(QColor(self.port_color))
         self._default_pen.setWidthF(1.5)
         self._default_brush: QBrush = QBrush(QColor(self.port_color))
+
+        self._default_widget: Type | None = None
+        if default_widget:
+            self._default_widget = default_widget()
+        if isinstance(self._default_widget, QLineEdit):
+            self._default_widget.setTextMargins(0, 0, 0, 0)
+            self._default_widget.setFixedWidth(30)
+            self.port_width += 25
+        elif isinstance(self._default_widget, QCheckBox):
+            self._default_widget.setFixedSize(20, 20)
+            self._default_widget.setStyleSheet(
+                '''
+                QCheckBox::indicator {
+                    width: 20px; 
+                    height: 20px;
+                    background: none;
+                }
+                '''
+            )
+            self.port_width += 25
 
     def __get_chinese_count(self, s: str) -> int:
         __count = 0
@@ -202,8 +223,11 @@ class ExecOutPort(ExecPort):
 
 
 class ParamPort(NodePort):
-    def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff', parent=None):
-        super().__init__(port_label, port_class, port_color, NodePort.PORT_TYPE_PARAM, parent)
+    def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff', parent=None,
+                 default_widget=None):
+        super().__init__(port_label, port_class, port_color, NodePort.PORT_TYPE_PARAM, parent,
+                         default_widget=default_widget)
+        self.__init_default_widget()
 
     def _fill_port(self, painter):
         # 填充
@@ -238,6 +262,11 @@ class ParamPort(NodePort):
         painter.drawText(
             QRectF(self.port_icon_size, 0, self.port_label_size, self.port_icon_size),
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._port_label)
+
+    def __init_default_widget(self):
+        proxy = QGraphicsProxyWidget(self)
+        proxy.setWidget(self._default_widget)
+        proxy.setPos(self.port_icon_size + self.port_label_size, 0)
 
 
 class OutputPort(NodePort):
@@ -292,7 +321,8 @@ class Pin:
         DATA = 'data'
         EXEC = 'exec'
 
-    def __init__(self, pin_name: str = '', pin_class: str = '', use_default_widget: bool = True, pin_type: PinType = '', pin_widget=None):
+    def __init__(self, pin_name: str = '', pin_class: str = '', use_default_widget: bool = True, pin_type: PinType = '',
+                 pin_widget=None):
         self._pin_name = pin_name
         self._pin_type = pin_type
         if self._pin_type == Pin.PinType.DATA:
@@ -306,8 +336,6 @@ class Pin:
         self.port: NodePort | None = None
         self.current_session = -1
         self.has_set_val = False
-
-        self.init_port()
 
     def get_pin_value(self) -> Any:
         return self.pin_value
@@ -331,7 +359,8 @@ class Pin:
 class NodeInput(Pin):
     def init_port(self) -> ParamPort:
         if self._pin_type == Pin.PinType.DATA:
-            self.port = ParamPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color)
+            self.port = ParamPort(port_label=self._pin_name, port_class=self._pin_class, port_color=self._pin_color,
+                                  default_widget=self._pin_widget)
         elif self._pin_type == Pin.PinType.EXEC:
             self.port = ExecInPort(port_label=self._pin_name)
         else:

@@ -33,3 +33,5 @@ class DTypes:
         'class': QLineEdit,
         'vector': QLineEdit
     }
+
+
