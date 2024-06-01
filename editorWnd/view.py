@@ -83,6 +83,7 @@ class View(QGraphicsView):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
             self.__delete_selected_items()
+        super().keyPressEvent(event)
 
     def __delete_selected_items(self):
         # 获得当前选中的items
