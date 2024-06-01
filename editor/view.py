@@ -64,6 +64,9 @@ class View(QGraphicsView):
         elif event.button() == Qt.MouseButton.LeftButton:
             # 鼠标左键点击
             self.__left_button_pressed(event)
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.setDragMode(QGraphicsView.DragMode.NoDrag)
+            super().mousePressEvent(event)
         else:
             super().mousePressEvent(event)
 
@@ -104,6 +107,8 @@ class View(QGraphicsView):
             self.__middle_button_released(event)
         elif event.button() == Qt.MouseButton.LeftButton:
             self.__left_button_released(event)
+        elif event.button() == Qt.MouseButton.RightButton:
+            self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         else:
             super().mouseReleaseEvent(event)
 
