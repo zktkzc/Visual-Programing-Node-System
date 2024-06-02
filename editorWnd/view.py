@@ -75,6 +75,7 @@ class View(QGraphicsView):
 
     def __show_node_list_widget_at_pos(self, pos: QPoint | QPointF):
         self.node_list_widget.setGeometry(pos.x(), pos.y(), 200, 300)
+        self.node_list_widget.collapseAll() # 默认折叠所有节点
         self.node_list_widget.show()
         self._pos_show_node_list_widget = pos
 

@@ -10,7 +10,7 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
-from editorWnd.config import EditorConfig
+from editorWnd.config import EditorConfig, NodeConfig
 from editorWnd.node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class GraphicNode(QGraphicsItem):
         # 左右两个端口之间的间距
         self._port_space: float = 50
         # node的边框
-        self._pen_default = QPen(QColor('#151515'))
+        self._pen_default = QPen(QColor('#4e90fe'))
         self._pen_selected = QPen(QColor('#aaffee00'))
         # node的背景
         self._background_brush = QBrush(QColor('#aa151515'))
@@ -50,7 +50,7 @@ class GraphicNode(QGraphicsItem):
         self._title_font = QFont(EditorConfig.EDITOR_NODE_TITLE_FONT, self._title_font_size)
         self._title_color = Qt.GlobalColor.white
         self._title_padding: float = 5
-        self._title_background_brush = QBrush(QColor('#aa00003f'))
+        self._title_background_brush = QBrush(QColor('#aa4e90fe'))
         # port的边距
         self._port_padding: float = 7
         self._param_ports: list[ParamPort] = param_ports
@@ -131,11 +131,11 @@ class GraphicNode(QGraphicsItem):
             self.add_port(port, index=i)
 
     def __init_node_size(self):
-        param_height = len(self._param_ports) * (EditorConfig.PORT_ICON_SIZE + self._port_padding)
+        param_height = len(self._param_ports) * (NodeConfig.PORT_ICON_SIZE + self._port_padding)
         for i, port in enumerate(self._param_ports):
             if self._max_param_port_width < port.port_width:
                 self._max_param_port_width = port.port_width
-        output_height = len(self._output_ports) * (EditorConfig.PORT_ICON_SIZE + self._port_padding)
+        output_height = len(self._output_ports) * (NodeConfig.PORT_ICON_SIZE + self._port_padding)
         self._node_height += max(output_height, param_height)
         for i, port in enumerate(self._output_ports):
             if self._max_output_port_width < port.port_width:
@@ -147,6 +147,11 @@ class GraphicNode(QGraphicsItem):
         self._scene = scene
 
     def __init_title(self):
+        color = QColor(NodeConfig.node_title_background_color.get(self.pkg_name, '#4e90fe'))
+        self._pen_default = QPen(color)
+        color.setAlphaF(0.6)
+        self._title_background_brush = QBrush(color)
+
         self._title_item = QGraphicsTextItem(self)
         self._title_item.setPlainText(self._title)
         self._title_item.setFont(self._title_font)
@@ -195,12 +200,14 @@ class GraphicNode(QGraphicsItem):
             painter.drawPath(node_outline)
             self._shadow.setColor(Qt.GlobalColor.yellow)
             self.setGraphicsEffect(self._shadow)
+            self.setZValue(1)
         else:
             painter.setPen(self._pen_default)
             painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawPath(node_outline)
             self._shadow.setColor(QColor('#00000000'))
             self.setGraphicsEffect(self._shadow)
+            self.setZValue(0)
 
     def add_port(self, port: NodePort = None, index: int = 0):
         if port.port_type == NodePort.PORT_TYPE_EXEC_IN:

@@ -22,4 +22,12 @@ class EditorConfig:
     EDITOR_NODE_PIN_LABEL_FONT_SIZE = 12
     EDITOR_NODE_PIN_LABEL_FONT = 'Microsoft YaHei'
 
+
+class NodeConfig:
     PORT_ICON_SIZE = 20
+    node_title_background_color = {
+        '默认行为': '#f5232e',
+        '基本运算': '#88df00',
+        '节点转换': '#fa8b17',
+        '控制结构': '#4e90fe',
+    }
