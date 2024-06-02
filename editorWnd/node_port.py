@@ -246,6 +246,11 @@ class ParamPort(NodePort):
 
         if len(self._edges) > 0:
             self._fill_port(painter)
+            if self._default_widget:
+                self._default_widget.setVisible(False)
+        else:
+            if self._default_widget:
+                self._default_widget.setVisible(True)
 
         # 三角
         poly = QPolygonF()
