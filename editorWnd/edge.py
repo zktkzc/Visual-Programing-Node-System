@@ -62,11 +62,16 @@ class NodeEdge(QGraphicsPathItem):
         dest_pos = self.dest_port.get_port_pos()
         path = QPainterPath(src_pos)
         # 计算贝塞尔曲线手柄的长度
-        x_width = abs(src_pos.x() - dest_pos.x()) + 1
+        x_width = src_pos.x() - dest_pos.x()
+        x_width = x_width + 0.01 if x_width == 0 else x_width
         y_height = abs(src_pos.y() - dest_pos.y())
         tangent = float(y_height) / x_width * 0.5
         tangent = tangent if tangent < 1 else 1
         tangent *= x_width
+        if x_width > 0:
+            if x_width > 150:
+                x_width = 150
+            tangent += x_width
         path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
                      dest_pos)
         self.setPath(path)
@@ -117,12 +122,15 @@ class DraggingEdge(QGraphicsPathItem):
         dest_pos: QPointF = QPointF(self._dst_pos[0], self._dst_pos[1])
         path = QPainterPath(src_pos)
         # 计算贝塞尔曲线手柄的长度
-        x_width = abs(src_pos.x() - dest_pos.x()) + 1
+        x_width = src_pos.x() - dest_pos.x()
+        x_width = x_width + 0.01 if x_width == 0 else x_width
         y_height = abs(src_pos.y() - dest_pos.y())
         tangent = float(y_height) / x_width * 0.5
-        tangent = tangent if tangent < 1 else 1
         tangent *= x_width
-        tangent = tangent if tangent > 100 else 100
+        if x_width > 0:
+            if x_width > 150:
+                x_width = 150
+            tangent += x_width
         path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
                      dest_pos)
         self.setPath(path)
