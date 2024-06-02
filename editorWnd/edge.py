@@ -9,10 +9,10 @@ from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
 
-from node_port import NodePort
+from editorWnd.node_port import NodePort
 
 if TYPE_CHECKING:
-    from scene import Scene
+    from editorWnd.scene import Scene
 
 
 class NodeEdge(QGraphicsPathItem):

@@ -1,12 +1,12 @@
 import inspect
-import sys
 import os
+import sys
 from collections import defaultdict
 from typing import Type
 
 import nodes
 from editorWnd.node import Node
-from node_lib import NodeClsLib
+from editorWnd.node_lib import NodeClsLib
 
 
 class ENV:
@@ -18,7 +18,7 @@ class ENV:
         for module in os.listdir(path_folder):
             if not module.endswith('.py') or module == '__init__.py':
                 continue
-            __import__(f'nodes.{module[:-3]}', locals(), globals())
+            __import__(f'nodes.{module[:-3]}', locals(), globals()) # 导入模块，在locals和globals中添加模块的名字和对象
         # 对已导入的nodes包下的文件名进行遍历
         for module_name, _ in inspect.getmembers(nodes, inspect.ismodule):
             for cls_name, cls in inspect.getmembers(sys.modules[f'nodes.{module_name}'], inspect.isclass):

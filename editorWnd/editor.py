@@ -6,13 +6,11 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QBoxLayout
 
-from node import GraphicNode
-from node_port import ParamPort, OutputPort
-from nodes.BasicCalcNode import AddNode
-from nodes.BranchNode import BranchNode
-from scene import Scene
-from view import View
-from env import ENV
+from editorWnd.env import ENV
+from editorWnd.node import GraphicNode
+from editorWnd.node_port import ParamPort, OutputPort
+from editorWnd.scene import Scene
+from editorWnd.view import View
 
 
 class Editor(QWidget):

@@ -11,13 +11,13 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen, QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsProxyWidget, QLineEdit, QCheckBox
 
-from config import EditorConfig
-from dtypes import DTypes
+from editorWnd.config import EditorConfig
+from editorWnd.dtypes import DTypes
 
 if TYPE_CHECKING:
-    from scene import Scene
-    from node import GraphicNode
-    from edge import NodeEdge
+    from editorWnd.scene import Scene
+    from editorWnd.node import GraphicNode
+    from editorWnd.edge import NodeEdge
 
 
 class NodePort(QGraphicsItem):
@@ -39,7 +39,7 @@ class NodePort(QGraphicsItem):
         self.port_type: int = port_type
         self._port_font_size: int = EditorConfig.EDITOR_NODE_PIN_LABEL_FONT_SIZE
         self._port_font: QFont = QFont(EditorConfig.EDITOR_NODE_PIN_LABEL_FONT, self._port_font_size)
-        self.port_icon_size: float = 20
+        self.port_icon_size: float = EditorConfig.PORT_ICON_SIZE
         self.port_label_size: int = (len(self._port_label) + self.__get_chinese_count(
             self._port_label)) * self._port_font_size
         self.port_width: float = self.port_icon_size + self.port_label_size

@@ -1,5 +1,5 @@
-from editorWnd.node import Node, NodeInput, NodeOutput
-from editorWnd.node_port import Pin
+from editorWnd.node import Node
+from editorWnd.node_port import Pin, NodeInput, NodeOutput
 from editorWnd.dtypes import DTypes
 
 

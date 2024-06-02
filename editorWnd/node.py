@@ -10,12 +10,12 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
-from config import EditorConfig
-from node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
+from editorWnd.config import EditorConfig
+from editorWnd.node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
 
 if TYPE_CHECKING:
-    from edge import NodeEdge
-    from scene import Scene
+    from editorWnd.edge import NodeEdge
+    from editorWnd.scene import Scene
 
 
 class GraphicNode(QGraphicsItem):
@@ -131,11 +131,11 @@ class GraphicNode(QGraphicsItem):
             self.add_port(port, index=i)
 
     def __init_node_size(self):
-        param_height = len(self._param_ports) * (self._param_ports[0].port_icon_size + self._port_padding)
+        param_height = len(self._param_ports) * (EditorConfig.PORT_ICON_SIZE + self._port_padding)
         for i, port in enumerate(self._param_ports):
             if self._max_param_port_width < port.port_width:
                 self._max_param_port_width = port.port_width
-        output_height = len(self._output_ports) * (self._output_ports[0].port_icon_size + self._port_padding)
+        output_height = len(self._output_ports) * (EditorConfig.PORT_ICON_SIZE + self._port_padding)
         self._node_height += max(output_height, param_height)
         for i, port in enumerate(self._output_ports):
             if self._max_output_port_width < port.port_width:
@@ -265,9 +265,9 @@ class Node(GraphicNode):
         if self.input_pins is None:
             print('Node: input pins could not be None')
             return False
-        if len(self.input_pins) == 0:
-            print('Node: input pins could not be empty')
-            return False
+        # if len(self.input_pins) == 0:
+        #     print('Node: input pins could not be empty')
+        #     return False
         if self.output_pins is None:
             self.output_pins = []
         return True

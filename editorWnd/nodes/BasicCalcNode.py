@@ -1,6 +1,6 @@
 from editorWnd.dtypes import DTypes
-from editorWnd.node import Node, NodeInput, NodeOutput
-from editorWnd.node_port import Pin
+from editorWnd.node import Node
+from editorWnd.node_port import Pin, NodeInput, NodeOutput
 
 
 class AddNode(Node):
@@ -91,6 +91,8 @@ class GreaterNode(Node):
     ]
     output_pins = [
         NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
+        NodeOutput(pin_name='输出1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeOutput(pin_name='输出2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
@@ -98,6 +100,8 @@ class GreaterNode(Node):
             self.output_pins[0].set_pin_value(True)
         else:
             self.output_pins[0].set_pin_value(False)
+        self.output_pins[1].set_pin_value(self.input_pins[0].get_pin_value())
+        self.output_pins[2].set_pin_value(self.input_pins[1].get_pin_value())
 
 
 class LessNode(Node):

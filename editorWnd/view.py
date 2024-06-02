@@ -10,14 +10,14 @@ from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget
 
-from edge import NodeEdge, DraggingEdge, CuttingLine
-from env import ENV
+from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
+from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
-from node_port import NodePort
-from widgets import NodeListWidget
+from editorWnd.node_port import NodePort
+from editorWnd.widgets import NodeListWidget
 
 if TYPE_CHECKING:
-    from scene import Scene
+    from editorWnd.scene import Scene
 
 
 class View(QGraphicsView):

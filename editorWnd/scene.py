@@ -11,10 +11,10 @@ from PySide6.QtCore import Qt, QLine
 from PySide6.QtGui import QBrush, QColor, QPen
 from PySide6.QtWidgets import QGraphicsScene
 
-from config import EditorConfig
+from editorWnd.config import EditorConfig
 
 if TYPE_CHECKING:
-    from view import View
+    from editorWnd.view import View
 
 
 class Scene(QGraphicsScene):

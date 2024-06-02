@@ -21,3 +21,5 @@ class EditorConfig:
     EDITOR_NODE_TITLE_FONT = 'Microsoft YaHei'
     EDITOR_NODE_PIN_LABEL_FONT_SIZE = 12
     EDITOR_NODE_PIN_LABEL_FONT = 'Microsoft YaHei'
+
+    PORT_ICON_SIZE = 20
