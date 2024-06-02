@@ -8,7 +8,7 @@ import string
 from typing import TYPE_CHECKING, Any, Type
 
 from PySide6.QtCore import Qt, QRectF, QPointF
-from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen
+from PySide6.QtGui import QPainterPath, QColor, QBrush, QFont, QPolygonF, QPen, QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsProxyWidget, QLineEdit, QCheckBox
 
 from config import EditorConfig
@@ -264,6 +264,11 @@ class ParamPort(NodePort):
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._port_label)
 
     def __init_default_widget(self):
+        # 得到参数的类型
+        if self.port_class == DTypes.Integer:
+            self._default_widget.setValidator(QIntValidator())
+        elif self.port_class == DTypes.Float:
+            self._default_widget.setValidator(QDoubleValidator())
         proxy = QGraphicsProxyWidget(self)
         proxy.setWidget(self._default_widget)
         proxy.setPos(self.port_icon_size + self.port_label_size, 0)

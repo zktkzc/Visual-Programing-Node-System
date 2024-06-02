@@ -33,5 +33,6 @@ class NodeListWidget(QTreeWidget):
                 item.addChild(node_item)
             items.append(item)
         self.insertTopLevelItems(0, items)
+        self.sortItems(0, Qt.SortOrder.AscendingOrder)
 
 

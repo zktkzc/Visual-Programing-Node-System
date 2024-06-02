@@ -61,7 +61,8 @@ class View(QGraphicsView):
         # 获取data
         data = ENV.get_nodelib_json_data()
         self.node_list_widget = NodeListWidget(data)
-        self._scene.addWidget(self.node_list_widget)
+        proxy = self._scene.addWidget(self.node_list_widget)
+        proxy.setZValue(1)
         self.node_list_widget.setGeometry(0, 0, 200, 300)
         self.__hide_node_list_widget()
         self.node_list_widget.itemDoubleClicked.connect(self.__node_selected)
@@ -211,6 +212,7 @@ class View(QGraphicsView):
                                         Qt.MouseButton.NoButton, event.modifiers())
             super().mouseReleaseEvent(release_event)
             # 改变鼠标样式为小手
+            QApplication.setOverrideCursor(Qt.CursorShape.ClosedHandCursor)
             self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
             self._drag_mode = True
             # 默认为鼠标左键拖动，现在需要同时按住鼠标中建让图标变为小手，太麻烦了，因此创建手动创建一个鼠标左键点击的事件
@@ -224,6 +226,7 @@ class View(QGraphicsView):
         super().mouseReleaseEvent(release_event)
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
         self._drag_mode = False
+        QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
 
     def wheelEvent(self, event):
         if not self._drag_mode:
