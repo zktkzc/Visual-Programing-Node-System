@@ -1,5 +1,6 @@
 import inspect
 import sys
+import os
 from collections import defaultdict
 from typing import Type
 
@@ -12,6 +13,13 @@ class ENV:
     @staticmethod
     def init_node_env():
         node_cls_lst: list[Type] = []
+        # 获得nodes软件包下的文件名，并导入
+        path_folder = os.path.dirname(nodes.__file__)
+        for module in os.listdir(path_folder):
+            if not module.endswith('.py') or module == '__init__.py':
+                continue
+            __import__(f'nodes.{module[:-3]}', locals(), globals())
+        # 对已导入的nodes包下的文件名进行遍历
         for module_name, _ in inspect.getmembers(nodes, inspect.ismodule):
             for cls_name, cls in inspect.getmembers(sys.modules[f'nodes.{module_name}'], inspect.isclass):
                 if cls_name != 'Node' and issubclass(cls, Node):
