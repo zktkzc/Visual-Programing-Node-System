@@ -1,11 +1,11 @@
-from typing import Type
+from typing import Type, List, Union
 
 
 class NodeClsLib:
-    node_cls_list: list[Type] = []
+    node_cls_list: List[Type] = []
 
     @staticmethod
-    def register_nodes(node_cls: Type | list[Type]):
+    def register_nodes(node_cls: Union[Type, List[Type]]):
         if isinstance(node_cls, list):
             NodeClsLib.node_cls_list.extend(node_cls)
         else:

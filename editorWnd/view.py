@@ -3,7 +3,7 @@ QGraphicsView的子类，是scene的容器
 '''
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, List, Tuple
 
 import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
@@ -15,6 +15,7 @@ from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
 from editorWnd.node_port import NodePort
 from editorWnd.widgets import NodeListWidget
+from editorWnd.nodes.ActionNode import BeginNode
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
@@ -25,8 +26,8 @@ class View(QGraphicsView):
         super().__init__(parent)
         self._scene = scene
         self._scene.set_view(self)
-        self._nodes: list[GraphicNode] = []
-        self._edges: list[NodeEdge] = []
+        self._nodes: List[GraphicNode] = []
+        self._edges: List[NodeEdge] = []
         self.setScene(self._scene)
         self.setRenderHints(
             QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
@@ -35,8 +36,9 @@ class View(QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         # 缩放
-        self._zoom_clamp: list[float] = [0.5, 5]
+        self._zoom_clamp: List[float] = [0.5, 5]
         self._zoom_factor: float = 1.05
+        self._last_scale: float = 1
         self._view_scale: float = 1.0
         self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)  # 将画布拖动模式设置为橡皮筋模式，即可以拖动框选多个节点
@@ -44,7 +46,7 @@ class View(QGraphicsView):
         self._drag_mode: bool = False
 
         # 可拖动的连接线
-        self._dragging_edge: DraggingEdge | None = None
+        self._dragging_edge: Union[DraggingEdge, None] = None
         self._drag_edge_mode: bool = False
 
         # 添加cutting line
@@ -53,16 +55,19 @@ class View(QGraphicsView):
         self._scene.addItem(self._cutting_line)
 
         # 添加节点选择列表
-        self.node_list_widget: NodeListWidget | None = None
+        self.node_list_widget: Union[NodeListWidget, None] = None
         self.__setup_node_list_widget()
-        self._pos_show_node_list_widget: QPoint | QPointF = QPoint(0, 0)
+        self._pos_show_node_list_widget: Union[QPoint, QPointF] = QPoint(0, 0)
+        # 是否有开始运行节点
+        self._has_begin_node: bool = False
+        self._begin_node: Union[BeginNode, None] = None
 
     def __setup_node_list_widget(self):
         # 获取data
         data = ENV.get_nodelib_json_data()
         self.node_list_widget = NodeListWidget(data)
         proxy = self._scene.addWidget(self.node_list_widget)
-        proxy.setZValue(1)
+        proxy.setZValue(2)
         self.node_list_widget.setGeometry(0, 0, 200, 300)
         self.__hide_node_list_widget()
         self.node_list_widget.itemDoubleClicked.connect(self.__node_selected)
@@ -73,7 +78,7 @@ class View(QGraphicsView):
             self.add_node(node, (self._pos_show_node_list_widget.x(), self._pos_show_node_list_widget.y()))
             self.__hide_node_list_widget()
 
-    def __show_node_list_widget_at_pos(self, pos: QPoint | QPointF):
+    def __show_node_list_widget_at_pos(self, pos: Union[QPoint, QPointF]):
         self.node_list_widget.setGeometry(pos.x(), pos.y(), 200, 300)
         self.node_list_widget.collapseAll() # 默认折叠所有节点
         self.node_list_widget.show()
@@ -85,7 +90,17 @@ class View(QGraphicsView):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
             self.__delete_selected_items()
+        elif event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self.__run_graph()
         super().keyPressEvent(event)
+
+    def __run_graph(self):
+        # 找到开始运行节点，如果没有则提示
+        if not self._has_begin_node:
+            print('View -- Graph needs a BeginNode to run')
+            return
+        # 找到开始运行节点并开始运行
+        self._begin_node.run_node()
 
     def __delete_selected_items(self):
         # 获得当前选中的items
@@ -248,11 +263,17 @@ class View(QGraphicsView):
         self.resetTransform()
         self._view_scale = 1.0
 
-    def add_node(self, node: GraphicNode, pos: tuple[float, float] = (0, 0)):
+    def add_node(self, node: GraphicNode, pos: Tuple[float, float] = (0, 0)):
         '''
         添加节点
         :return:
         '''
+        if isinstance(node, BeginNode):
+            if self._has_begin_node:
+                print('View -- Add Graph Debug: BeginNode already exists')
+                return
+            self._has_begin_node = True
+            self._begin_node = node
         node.setPos(pos[0], pos[1])
         node.set_scene(self._scene)
         self._scene.addItem(node)
@@ -268,4 +289,7 @@ class View(QGraphicsView):
 
     def remove_node(self, node: GraphicNode):
         if node in self._nodes:
+            if isinstance(node, BeginNode):
+                self._has_begin_node = False
+                self._begin_node = None
             self._nodes.remove(node)

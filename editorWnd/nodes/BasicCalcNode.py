@@ -17,9 +17,9 @@ class AddNode(Node):
 
     def run_node(self):
         sum = 0
-        for pin in self.input_pins:
-            sum += pin.get_pin_value()
-        self.output_pins[0].set_pin_value(sum)
+        for index in range(len(self.in_ports)):
+            sum += self.input(index)
+        self.output(0, sum)
 
 
 class MinusNode(Node):
@@ -34,10 +34,10 @@ class MinusNode(Node):
     ]
 
     def run_node(self):
-        diff = self.input_pins[0]
-        for pin in self.input_pins[1:]:
-            diff -= pin.get_pin_value()
-        self.output_pins[0].set_pin_value(diff)
+        diff = self.input(0)
+        for index in range(1, len(self.in_ports)):
+            diff -= self.input(index)
+        self.output(0, diff)
 
 
 class MultiplyNode(Node):
@@ -53,10 +53,10 @@ class MultiplyNode(Node):
     ]
 
     def run_node(self):
-        result = self.input_pins[0]
-        for pin in self.input_pins[1:]:
-            result *= pin.get_pin_value()
-        self.output_pins[0].set_pin_value(result)
+        result = self.input(0)
+        for index in range(1, len(self.in_ports)):
+            result *= self.input(index)
+        self.output(0, result)
 
 
 class DivideNode(Node):
@@ -72,13 +72,13 @@ class DivideNode(Node):
     ]
 
     def run_node(self):
-        result = self.input_pins[0]
-        for pin in self.input_pins[1:]:
-            if pin.get_pin_value() == 0:
-                print('Node: the second input is zero, cannot divide by zero')
+        result = self.input(0)
+        for index in range(1, len(self.in_ports)):
+            if self.input(index) == 0:
+                print('除法节点: 除数不能为0')
                 return
-            result /= pin.get_pin_value()
-        self.output_pins[0].set_pin_value(result)
+            result /= self.input(index)
+        self.output(0, result)
 
 
 class GreaterNode(Node):
@@ -96,12 +96,12 @@ class GreaterNode(Node):
     ]
 
     def run_node(self):
-        if self.input_pins[0].get_pin_value() > self.input_pins[1].get_pin_value():
-            self.output_pins[0].set_pin_value(True)
+        if self.input(0) > self.input(1):
+            self.output(0, True)
         else:
-            self.output_pins[0].set_pin_value(False)
-        self.output_pins[1].set_pin_value(self.input_pins[0].get_pin_value())
-        self.output_pins[2].set_pin_value(self.input_pins[1].get_pin_value())
+            self.output(0, False)
+        self.output(1, self.input(0))
+        self.output(2, self.input(1))
 
 
 class LessNode(Node):
@@ -114,10 +114,14 @@ class LessNode(Node):
     ]
     output_pins = [
         NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
+        NodeOutput(pin_name='输出1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+        NodeOutput(pin_name='输出2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
     ]
 
     def run_node(self):
-        if self.input_pins[0].get_pin_value() < self.input_pins[1].get_pin_value():
-            self.output_pins[0].set_pin_value(True)
+        if self.input(0) < self.input(1):
+            self.output(0, True)
         else:
-            self.output_pins[0].set_pin_value(False)
+            self.output(0, False)
+        self.output(1, self.input(0))
+        self.output(2, self.input(1))

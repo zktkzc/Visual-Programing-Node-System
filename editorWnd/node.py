@@ -4,14 +4,14 @@ QGraphicsItem的子类
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, List
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsDropShadowEffect
 
 from editorWnd.config import EditorConfig, NodeConfig
-from editorWnd.node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput
+from editorWnd.node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput, Pin
 
 if TYPE_CHECKING:
     from editorWnd.edge import NodeEdge
@@ -244,8 +244,8 @@ class Node(GraphicNode):
     pkg_name: str = ''
     node_title: str = ''
     node_description: str = ''
-    input_pins: list[NodeInput] = []
-    output_pins: list[NodeOutput] = []
+    input_pins: List[NodeInput] = []
+    output_pins: List[NodeOutput] = []
 
     def __init__(self):
         # 状态
@@ -254,9 +254,9 @@ class Node(GraphicNode):
 
         self.is_validate()
 
-        in_ports: list[ParamPort] = [pin.init_port() for pin in self.input_pins]
-        out_ports: list[OutputPort] = [pin.init_port() for pin in self.output_pins]
-        super().__init__(title=self.node_title, param_ports=in_ports, output_ports=out_ports, is_pure=True)
+        self.in_ports: List[Union[ParamPort, ExecInPort]] = [pin.init_port() for pin in self.input_pins]
+        self.out_ports: List[Union[OutputPort, ExecOutPort]] = [pin.init_port() for pin in self.output_pins]
+        super().__init__(title=self.node_title, param_ports=self.in_ports, output_ports=self.out_ports, is_pure=True)
 
     @abc.abstractmethod
     def run_node(self):
@@ -272,33 +272,52 @@ class Node(GraphicNode):
         if self.input_pins is None:
             print('Node: input pins could not be None')
             return False
-        # if len(self.input_pins) == 0:
-        #     print('Node: input pins could not be empty')
-        #     return False
         if self.output_pins is None:
             self.output_pins = []
         return True
 
-    def input(self, index: int):
-        '''
+    def input(self, index: int) -> Union[int, float, str, bool, None]:
+        """
         通过index获取pin中存储的值，如果pin的值为空，需要从与该port相关联的port中来取值
-        :param index:
-        :return:
-        '''
-        pass
+        :param index: 索引
+        :return: pin中存储的值
+        """
+        pin = self.input_pins[index]
+        if not pin.pin_type == Pin.PinType.DATA:
+            print(f'Node: {self.node_title}\'s {index}th port is not a data port')
+            return None
+        port = self.in_ports[index]
+        port_value = port.get_default_value()
+        if port_value is None:
+            # 有连接的节点，从连接的节点获取值
+            port_value = port.get_value_from_connected_port()
+        return port_value
 
-    def output(self, index: int):
-        '''
+    def output(self, index: int, value: Union[int, float, str, bool]):
+        """
         设置输出值，并传递给下一个相连的节点的port
-        :param index:
+        :param value: 要设置的值
+        :param index: 索引
         :return:
-        '''
-        pass
+        """
+        pin = self.output_pins[index]
+        if not pin.pin_type == Pin.PinType.DATA:
+            print(f'Node: {self.node_title}\'s {index}th port is not a data port')
+            return None
+        self.out_ports[index].set_port_value(value)
 
     def exec_output(self, index: int):
-        '''
+        """
         执行端口
         :param index:
         :return:
-        '''
-        pass
+        """
+        pin = self.output_pins[index]
+        if not pin.pin_type == Pin.PinType.EXEC:
+            print(f'Node: {self.node_title}\'s {index}th port is not a exec port')
+            return
+        # 如果是，则获取该端口连接的节点
+        port = self.out_ports[index]
+        connected_ports = port.get_connected_ports()
+        for port in connected_ports:
+            port.parent_node.run_node()

@@ -15,7 +15,7 @@ class Integer2FloatNode(Node):
     ]
 
     def run_node(self):
-        self.output_pins[0].set_pin_value(float(self.input_pins[0].get_pin_value()))
+        self.output(0, float(self.input(0)))
 
 
 class Float2IntegerNode(Node):
@@ -30,7 +30,7 @@ class Float2IntegerNode(Node):
     ]
 
     def run_node(self):
-        self.output_pins[0].set_pin_value(int(self.input_pins[0].get_pin_value()))
+        self.output(0, int(self.input(0)))
 
 
 class Bool2StringNode(Node):
@@ -45,7 +45,7 @@ class Bool2StringNode(Node):
     ]
 
     def run_node(self):
-        self.output_pins[0].set_pin_value('True' if self.input_pins[0].get_pin_value() else 'False')
+        self.output(0, str(self.input(0)))
 
 
 class Integer2StringNode(Node):
@@ -60,7 +60,7 @@ class Integer2StringNode(Node):
     ]
 
     def run_node(self):
-        self.output_pins[0].set_pin_value(str(self.input_pins[0].get_pin_value()))
+        self.output(0, str(self.input(0)))
 
 
 class Float2StringNode(Node):
@@ -75,4 +75,4 @@ class Float2StringNode(Node):
     ]
 
     def run_node(self):
-        self.output_pins[0].set_pin_value(str(self.input_pins[0].get_pin_value()))
+        self.output(0, str(self.input(0)))

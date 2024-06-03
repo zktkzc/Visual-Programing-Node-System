@@ -26,8 +26,11 @@ class PrintNode(Node):
     ]
     output_pins = [
         NodeOutput(pin_type=Pin.PinType.EXEC),
-        NodeOutput(pin_type=Pin.PinType.EXEC, pin_name='打印输出')
+        NodeOutput(pin_type=Pin.PinType.DATA, pin_name='输出', pin_class=DTypes.String)
     ]
 
     def run_node(self):
-        print(self.input_pins[0].get_pin_value())
+        input_value = self.input(1)
+        print(input_value)
+        self.output(1, input_value)
+        self.exec_output(0)
