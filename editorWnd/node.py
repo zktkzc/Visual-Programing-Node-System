@@ -252,6 +252,8 @@ class Node(GraphicNode):
         self._input_data_ready: bool = False
         self._output_data_ready: bool = False
 
+        self._session_id: int = 0
+
         self.is_validate()
 
         self.in_ports: List[Union[ParamPort, ExecInPort]] = [pin.init_port() for pin in self.input_pins]
@@ -261,6 +263,18 @@ class Node(GraphicNode):
     @abc.abstractmethod
     def run_node(self):
         pass
+
+    def new_session(self, session_id: int):
+        """
+        创建新的session
+        :param session_id:
+        :return:
+        """
+        self._session_id = session_id
+        for port in self.in_ports:
+            port.new_session(self._session_id)
+        for port in self.out_ports:
+            port.new_session(self._session_id)
 
     def is_validate(self) -> bool:
         if self.node_title == '':

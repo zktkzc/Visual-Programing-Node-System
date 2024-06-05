@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget
 
 from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
-from editorWnd.node import GraphicNode
+from editorWnd.node import GraphicNode, Node
 from editorWnd.node_port import NodePort
 from editorWnd.widgets import NodeListWidget
 from editorWnd.nodes.ActionNode import BeginNode
@@ -26,9 +26,10 @@ class View(QGraphicsView):
         super().__init__(parent)
         self._scene = scene
         self._scene.set_view(self)
-        self._nodes: List[GraphicNode] = []
+        self._nodes: List[Union[GraphicNode, Node]] = []
         self._edges: List[NodeEdge] = []
         self.setScene(self._scene)
+        self._session_id: int = 0
         self.setRenderHints(
             QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
         self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
@@ -97,10 +98,17 @@ class View(QGraphicsView):
     def __run_graph(self):
         # 找到开始运行节点，如果没有则提示
         if not self._has_begin_node:
-            print('View -- Graph needs a BeginNode to run')
+            print('视图: 需要一个【开始运行】节点来运行')
             return
+        self.new_session()
         # 找到开始运行节点并开始运行
         self._begin_node.run_node()
+
+    def new_session(self):
+        self._session_id += 1
+        # 刷新所有节点的状态
+        for node in self._nodes:
+            node.new_session(self._session_id)
 
     def __delete_selected_items(self):
         # 获得当前选中的items
@@ -215,11 +223,11 @@ class View(QGraphicsView):
             super().mouseDoubleClickEvent(event)
 
     def __middle_button_pressed(self, event):
-        '''
+        """
         鼠标中间点击
         :param event:
         :return:
-        '''
+        """
         if self.itemAt(event.pos()) is not None:
             return
         else:

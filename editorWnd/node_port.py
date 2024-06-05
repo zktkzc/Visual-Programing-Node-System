@@ -47,6 +47,8 @@ class NodePort(QGraphicsItem):
         self.parent_node: Union[GraphicNode, Node, None] = None
         self._port_pos: Union[QPointF, QPoint] = QPointF(0, 0)
 
+        self._session_id: int = 0
+
         # 定义pen和brush
         self._default_pen: QPen = QPen(QColor(self.port_color))
         self._default_pen.setWidthF(1.5)
@@ -75,6 +77,10 @@ class NodePort(QGraphicsItem):
         # port中存储的值
         self._port_value: Any = None
         self._has_set_value: bool = False
+
+    def new_session(self, session_id: int):
+        self._session_id = session_id
+        self._has_set_value = False
 
     def is_connected(self) -> bool:
         return len(self._edges) > 0
