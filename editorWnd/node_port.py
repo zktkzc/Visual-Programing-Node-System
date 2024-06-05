@@ -28,12 +28,13 @@ class NodePort(QGraphicsItem):
 
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff',
                  port_type: int = PORT_TYPE_EXEC_IN, parent=None, connected_ports: list[NodePort] = None,
-                 edges: list[NodeEdge] = None, default_widget: Type | None = None):
+                 edges: list[NodeEdge] = None, default_widget: Type | None = None, hide_icon: bool = False):
         super().__init__(parent)
 
         self._edges: List[NodeEdge] = edges if edges is not None else []
         self._connected_ports: list[NodePort] = connected_ports if connected_ports is not None else []
         self._port_label: str = port_label
+        self._hide_icon: bool = hide_icon
         self.port_class = port_class
         self.port_color: str = port_color
         self.port_type: int = port_type
@@ -171,7 +172,9 @@ class NodePort(QGraphicsItem):
     def _fill_port(self, painter):
         pass
 
-    def get_port_pos(self) -> QPointF:
+    def get_port_pos(self) -> Union[QPointF, None]:
+        if self._hide_icon:
+            return None
         # 获得本身在scene内的位置
         self._port_pos = self.scenePos()
         return QPointF(self._port_pos.x() + 0.25 * self.port_icon_size, self._port_pos.y() + 0.5 * self.port_icon_size)
@@ -291,9 +294,9 @@ class ExecOutPort(ExecPort):
 
 class ParamPort(NodePort):
     def __init__(self, port_label: str = '', port_class: str = 'str', port_color: str = '#ffffff', parent=None,
-                 default_widget=None):
+                 default_widget=None, hide_icon=False):
         super().__init__(port_label, port_class, port_color, NodePort.PORT_TYPE_PARAM, parent,
-                         default_widget=default_widget)
+                         default_widget=default_widget, hide_icon=hide_icon)
         self._has_set_value = len(self._edges) > 0
         self.__init_default_widget()
 
@@ -306,11 +309,28 @@ class ParamPort(NodePort):
                             0.15 * self.port_icon_size)
 
     def paint(self, painter, option, widget=...):
-        # 圆
-        painter.setPen(self._default_pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawEllipse(QPointF(0.25 * self.port_icon_size, 0.5 * self.port_icon_size), 0.25 * self.port_icon_size,
-                            0.25 * self.port_icon_size)
+        if not self._hide_icon:
+            # 圆
+            painter.setPen(self._default_pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawEllipse(QPointF(0.25 * self.port_icon_size, 0.5 * self.port_icon_size),
+                                0.25 * self.port_icon_size, 0.25 * self.port_icon_size)
+
+            # 三角
+            poly = QPolygonF()
+            poly.append(QPointF(0.6 * self.port_icon_size, 0.35 * self.port_icon_size))
+            poly.append(QPointF(0.75 * self.port_icon_size, 0.5 * self.port_icon_size))
+            poly.append(QPointF(0.6 * self.port_icon_size, 0.65 * self.port_icon_size))
+            painter.setBrush(self._default_brush)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawPolygon(poly)
+
+            # 文字
+            painter.setPen(self._default_pen)
+            painter.setFont(self._port_font)
+            painter.drawText(
+                QRectF(self.port_icon_size, 0, self.port_label_size, self.port_icon_size),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._port_label)
 
         if len(self._edges) > 0:
             self._fill_port(painter)
@@ -320,22 +340,6 @@ class ParamPort(NodePort):
             if self._default_widget:
                 self._default_widget.setVisible(True)
 
-        # 三角
-        poly = QPolygonF()
-        poly.append(QPointF(0.6 * self.port_icon_size, 0.35 * self.port_icon_size))
-        poly.append(QPointF(0.75 * self.port_icon_size, 0.5 * self.port_icon_size))
-        poly.append(QPointF(0.6 * self.port_icon_size, 0.65 * self.port_icon_size))
-        painter.setBrush(self._default_brush)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawPolygon(poly)
-
-        # 文字
-        painter.setPen(self._default_pen)
-        painter.setFont(self._port_font)
-        painter.drawText(
-            QRectF(self.port_icon_size, 0, self.port_label_size, self.port_icon_size),
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._port_label)
-
     def __init_default_widget(self):
         # 得到参数的类型
         if self.port_class == DTypes.Integer:
@@ -344,7 +348,10 @@ class ParamPort(NodePort):
             self._default_widget.setValidator(QDoubleValidator())
         proxy = QGraphicsProxyWidget(self)
         proxy.setWidget(self._default_widget)
-        proxy.setPos(self.port_icon_size + self.port_label_size, 0)
+        if self._hide_icon:
+            proxy.setPos(10, 0)
+        else:
+            proxy.setPos(self.port_icon_size + self.port_label_size, 0)
 
 
 class OutputPort(NodePort):
@@ -400,7 +407,7 @@ class Pin:
         EXEC = 'exec'
 
     def __init__(self, pin_name: str = '', pin_class: str = '', use_default_widget: bool = True, pin_type: PinType = '',
-                 pin_widget=None):
+                 pin_widget=None, hide_icon: bool = False):
         self._pin_name = pin_name
         self.pin_type = pin_type
         if self.pin_type == Pin.PinType.DATA:
@@ -411,7 +418,7 @@ class Pin:
             else:
                 self._pin_widget = pin_widget
         self.port: Union[NodePort, None] = None
-        self.current_session = -1
+        self._hide_icon: bool = hide_icon
 
     def get_pin_type(self) -> PinType:
         return self.pin_type
@@ -425,7 +432,7 @@ class NodeInput(Pin):
     def init_port(self) -> ParamPort:
         if self.pin_type == Pin.PinType.DATA:
             self.port = ParamPort(port_label=self._pin_name, port_class=self.pin_class, port_color=self._pin_color,
-                                  default_widget=self._pin_widget)
+                                  default_widget=self._pin_widget, hide_icon=self._hide_icon)
         elif self.pin_type == Pin.PinType.EXEC:
             self.port = ExecInPort(port_label=self._pin_name)
         else:

@@ -81,9 +81,9 @@ class DivideNode(Node):
         self.output(0, result)
 
 
-class GreaterNode(Node):
-    pkg_name = '比较运算'
-    node_title = '大于'
+class GreaterNodeF(Node):
+    pkg_name = '基本运算'
+    node_title = '大于-浮点型'
     node_description = '比较运算 大于'
     input_pins = [
         NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
@@ -104,9 +104,9 @@ class GreaterNode(Node):
         self.output(2, self.input(1))
 
 
-class LessNode(Node):
-    pkg_name = '比较运算'
-    node_title = '小于'
+class LessNodeF(Node):
+    pkg_name = '基本运算'
+    node_title = '小于-浮点型'
     node_description = '比较运算 小于'
     input_pins = [
         NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
@@ -116,6 +116,51 @@ class LessNode(Node):
         NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
         NodeOutput(pin_name='输出1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
         NodeOutput(pin_name='输出2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Float),
+    ]
+
+    def run_node(self):
+        if self.input(0) < self.input(1):
+            self.output(0, True)
+        else:
+            self.output(0, False)
+        self.output(1, self.input(0))
+        self.output(2, self.input(1))
+
+class GreaterNode(Node):
+    pkg_name = '基本运算'
+    node_title = '大于-整数型'
+    node_description = '比较运算 大于'
+    input_pins = [
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+    ]
+    output_pins = [
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
+        NodeOutput(pin_name='输出1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+        NodeOutput(pin_name='输出2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+    ]
+
+    def run_node(self):
+        if self.input(0) > self.input(1):
+            self.output(0, True)
+        else:
+            self.output(0, False)
+        self.output(1, self.input(0))
+        self.output(2, self.input(1))
+
+
+class LessNode(Node):
+    pkg_name = '基本运算'
+    node_title = '小于-整数型'
+    node_description = '比较运算 小于'
+    input_pins = [
+        NodeInput(pin_name='输入1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+        NodeInput(pin_name='输入2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+    ]
+    output_pins = [
+        NodeOutput(pin_name='结果', pin_type=Pin.PinType.DATA, pin_class='bool'),
+        NodeOutput(pin_name='输出1', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
+        NodeOutput(pin_name='输出2', pin_type=Pin.PinType.DATA, pin_class=DTypes.Integer),
     ]
 
     def run_node(self):

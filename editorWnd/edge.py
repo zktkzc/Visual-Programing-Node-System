@@ -179,15 +179,18 @@ class DraggingEdge(QGraphicsPathItem):
         return False
 
     def __can_connect(self) -> bool:
-        '''
+        """
         判断两个端口是否能够连接
-        :param port1:
-        :param port2:
-        :return:
-        '''
-        if self.__is_pair() and self.__has_same_class() and self.__not_in_same_node():
+        :return: 是否可以连接
+        """
+        if self.__is_pair() and self.__has_same_class() and self.__not_in_same_node() and self.__dst_not_none():
             return True
         return False
+
+    def __dst_not_none(self) -> bool:
+        if self.dst_port.get_port_pos() is None:
+            return False
+        return True
 
 
 class CuttingLine(QGraphicsPathItem):

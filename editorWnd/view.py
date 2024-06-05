@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 class View(QGraphicsView):
     def __init__(self, scene: Scene, parent=None):
         super().__init__(parent)
-        self._scene = scene
+        self._scene: Scene = scene
         self._scene.set_view(self)
         self._nodes: List[Union[GraphicNode, Node]] = []
         self._edges: List[NodeEdge] = []
