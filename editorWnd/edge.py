@@ -1,9 +1,9 @@
-'''
+"""
 节点的连接边
-'''
+"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
@@ -55,10 +55,10 @@ class NodeEdge(QGraphicsPathItem):
         self.dest_port.update()
 
     def update_edge_path(self):
-        '''
+        """
         更新路径
         :return:
-        '''
+        """
         src_pos = self.src_port.get_port_pos()
         dest_pos = self.dest_port.get_port_pos()
         path = QPainterPath(src_pos)
@@ -94,6 +94,15 @@ class NodeEdge(QGraphicsPathItem):
             self._shadow.setColor('#00000000')
             self.setGraphicsEffect(self._shadow)
 
+    def to_string(self) -> Dict[str, Any]:
+        edge: Dict[str, Any] = {
+            'source_node_id': self.src_port.parent_node.node_id,
+            'source_port_index': self.src_port.get_port_index(),
+            'dest_node_id': self.dest_port.parent_node.node_id,
+            'dest_port_index': self.dest_port.get_port_index(),
+        }
+        return edge
+
 
 class DraggingEdge(QGraphicsPathItem):
     def __init__(self, parent=None, src_pos: tuple[float, float] = (0, 0), dst_pos: tuple[float, float] = (0, 0),
@@ -118,10 +127,10 @@ class DraggingEdge(QGraphicsPathItem):
         painter.drawPath(self.path())
 
     def update_edge_path(self):
-        '''
+        """
         更新连接边的路径
         :return:
-        '''
+        """
         src_pos: QPointF = QPointF(self._src_pos[0], self._src_pos[1])
         dest_pos: QPointF = QPointF(self._dst_pos[0], self._dst_pos[1])
         path = QPainterPath(src_pos)
@@ -147,7 +156,7 @@ class DraggingEdge(QGraphicsPathItem):
             self._dst_pos = pos
         else:
             self._src_pos = pos
-        self.prepareGeometryChange() # 通知视图更新，重新绘制，否则不会更新
+        self.prepareGeometryChange()  # 通知视图更新，重新绘制，否则不会更新
         self.update_edge_path()
         self.update()
 
@@ -171,9 +180,11 @@ class DraggingEdge(QGraphicsPathItem):
         return None
 
     def __is_pair(self) -> bool:
-        if self.src_port.port_type == NodePort.PORT_TYPE_EXEC_OUT and self.dst_port.port_type == NodePort.PORT_TYPE_EXEC_IN:
+        if (self.src_port.port_type == NodePort.PORT_TYPE_EXEC_OUT
+                and self.dst_port.port_type == NodePort.PORT_TYPE_EXEC_IN):
             return True
-        elif self.src_port.port_type == NodePort.PORT_TYPE_OUTPUT and self.dst_port.port_type == NodePort.PORT_TYPE_PARAM:
+        elif (self.src_port.port_type == NodePort.PORT_TYPE_OUTPUT
+              and self.dst_port.port_type == NodePort.PORT_TYPE_PARAM):
             return True
         return False
 
@@ -228,7 +239,7 @@ class CuttingLine(QGraphicsPathItem):
         path = QPainterPath()
         path.addPolygon(poly)
         self.setPath(path)
-        self.prepareGeometryChange() # 通知视图更新，重新绘制，否则不会更新
+        self.prepareGeometryChange()  # 通知视图更新，重新绘制，否则不会更新
         self.update()
 
     def remove_intersect_edges(self, edges: list[NodeEdge]):

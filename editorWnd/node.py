@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import abc
 import string
-from typing import TYPE_CHECKING, Union, List, Any
+from random import randint
+from typing import TYPE_CHECKING, Union, List, Any, Dict
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
@@ -266,11 +267,14 @@ class Node(GraphicNode):
         self._output_data_ready: bool = False
 
         self._session_id: int = 0
+        self.node_id: int = randint(10000, 10000000)
 
         self.is_validate()
 
-        self.in_ports: List[Union[ParamPort, ExecInPort]] = [pin.init_port() for pin in self.input_pins]
-        self.out_ports: List[Union[OutputPort, ExecOutPort]] = [pin.init_port() for pin in self.output_pins]
+        self.in_ports: List[Union[ParamPort, ExecInPort]] = \
+            [self.input_pins[i].init_port(i) for i in range(len(self.input_pins))]
+        self.out_ports: List[Union[OutputPort, ExecOutPort]] = \
+            [self.output_pins[i].init_port(i) for i in range(len(self.output_pins))]
         super().__init__(title=self.node_title, param_ports=self.in_ports, output_ports=self.out_ports, is_pure=True)
 
     @abc.abstractmethod
@@ -358,3 +362,25 @@ class Node(GraphicNode):
         for port in connected_ports:
             port.set_port_value(True)
             port.parent_node.run_node()
+
+    def get_input_port(self, index: int) -> Union[ParamPort, ExecInPort]:
+        if 0 <= index < len(self.in_ports):
+            return self.in_ports[index]
+
+    def get_output_port(self, index: int) -> Union[OutputPort, ExecOutPort]:
+        if 0 <= index < len(self.out_ports):
+            return self.out_ports[index]
+
+    def to_string(self) -> Dict[str, Any]:
+        node: Dict[str, Any] = {
+            'id': self.node_id,
+            'class': self.__class__.__name__,
+            'module': self.__class__.__module__,
+            'pos': (self.scenePos().x(), self.scenePos().y()),
+            'port_values': {}
+        }
+        for index, port in enumerate(self.in_ports):
+            value = port.get_default_value()
+            if value:
+                node['port_values'][index] = value
+        return node

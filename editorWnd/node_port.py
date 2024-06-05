@@ -80,6 +80,8 @@ class NodePort(QGraphicsItem):
         self._port_value: Any = None
         self._has_set_value: bool = False
 
+        self._port_index:int = 0
+
     def new_session(self, session_id: int):
         self._session_id = session_id
         self._has_set_value = False
@@ -188,6 +190,12 @@ class NodePort(QGraphicsItem):
         self.setParentItem(parent_node)
         self.parent_node = parent_node
         self._scene = scene
+
+    def set_port_index(self, index: int):
+        self._port_index = index
+
+    def get_port_index(self) -> int:
+        return self._port_index
 
 
 class ExecPort(NodePort):
@@ -426,17 +434,19 @@ class Pin:
         return self.pin_type
 
     @abc.abstractmethod
-    def init_port(self):
+    def init_port(self, index: int):
         pass
 
 
 class NodeInput(Pin):
-    def init_port(self) -> ParamPort:
+    def init_port(self, index) -> ParamPort:
         if self.pin_type == Pin.PinType.DATA:
             self.port = ParamPort(port_label=self._pin_name, port_class=self.pin_class, port_color=self._pin_color,
                                   default_widget=self._pin_widget, hide_icon=self._hide_icon)
+            self.port.set_port_index(index)
         elif self.pin_type == Pin.PinType.EXEC:
             self.port = ExecInPort(port_label=self._pin_name)
+            self.port.set_port_index(index)
         else:
             self.port = None
             print('no such kinds of pin type')
@@ -444,11 +454,13 @@ class NodeInput(Pin):
 
 
 class NodeOutput(Pin):
-    def init_port(self) -> OutputPort:
+    def init_port(self, index) -> OutputPort:
         if self.pin_type == Pin.PinType.DATA:
             self.port = OutputPort(port_label=self._pin_name, port_class=self.pin_class, port_color=self._pin_color)
+            self.port.set_port_index(index)
         elif self.pin_type == Pin.PinType.EXEC:
             self.port = ExecOutPort(port_label=self._pin_name)
+            self.port.set_port_index(index)
         else:
             self.port = None
             print('no such kinds of pin type')

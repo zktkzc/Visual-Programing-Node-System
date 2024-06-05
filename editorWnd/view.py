@@ -3,7 +3,8 @@ QGraphicsView的子类，是scene的容器
 '''
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, List, Tuple
+import json
+from typing import TYPE_CHECKING, Union, List, Tuple, Dict, Any
 
 import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
@@ -93,7 +94,24 @@ class View(QGraphicsView):
             self.__delete_selected_items()
         elif event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.__run_graph()
+        elif event.key() == Qt.Key.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self.__save_graph()
         super().keyPressEvent(event)
+
+    def __save_graph(self):
+        data: Dict[str, Any] = {'graph_name': '', 'time': '', 'nodes': [], 'edges': []}
+        # node
+        for node in self._nodes:
+            data['nodes'].append(node.to_string())
+        # edge
+        for edge in self._edges:
+            data['edges'].append(edge.to_string())
+        json_str = json.dumps(data)
+        with open('../graph.json', 'w') as f:
+            f.write(json_str)
+
+    def __load_graph(self):
+        pass
 
     def __run_graph(self):
         # 找到开始运行节点，如果没有则提示
