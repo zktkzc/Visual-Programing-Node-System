@@ -14,8 +14,8 @@ from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode, Node
 from editorWnd.node_port import NodePort
-from editorWnd.widgets import NodeListWidget
 from editorWnd.nodes.ActionNode import BeginNode
+from editorWnd.widgets import NodeListWidget
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
@@ -81,7 +81,7 @@ class View(QGraphicsView):
 
     def __show_node_list_widget_at_pos(self, pos: Union[QPoint, QPointF]):
         self.node_list_widget.setGeometry(pos.x(), pos.y(), 200, 300)
-        self.node_list_widget.collapseAll() # 默认折叠所有节点
+        self.node_list_widget.collapseAll()  # 默认折叠所有节点
         self.node_list_widget.show()
         self._pos_show_node_list_widget = pos
 
@@ -196,8 +196,7 @@ class View(QGraphicsView):
         self._cutting_line.remove_intersect_edges(self._edges)
         # 清除cutting line
         self._cutting_mode = False
-        self._cutting_line.line_points.clear()
-        self._cutting_line.update()
+        self._cutting_line.clear_points()
         QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
 

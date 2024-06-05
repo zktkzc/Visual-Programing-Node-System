@@ -35,6 +35,7 @@ class NodeEdge(QGraphicsPathItem):
         self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setZValue(-1)  # 降低线的级别
 
+        self.update_edge_path()
         self.add_to_scene()
 
     def remove_self(self):
@@ -72,6 +73,9 @@ class NodeEdge(QGraphicsPathItem):
             if x_width > 150:
                 x_width = 150
             tangent += x_width
+        else:
+            if tangent > 150:
+                tangent = 150
         path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
                      dest_pos)
         self.setPath(path)
@@ -131,6 +135,9 @@ class DraggingEdge(QGraphicsPathItem):
             if x_width > 150:
                 x_width = 150
             tangent += x_width
+        else:
+            if tangent > 150:
+                tangent = 150
         path.cubicTo(QPointF(src_pos.x() + tangent, src_pos.y()), QPointF(dest_pos.x() - tangent, dest_pos.y()),
                      dest_pos)
         self.setPath(path)
@@ -140,6 +147,8 @@ class DraggingEdge(QGraphicsPathItem):
             self._dst_pos = pos
         else:
             self._src_pos = pos
+        self.prepareGeometryChange() # 通知视图更新，重新绘制，否则不会更新
+        self.update_edge_path()
         self.update()
 
     def set_first_port(self, port: NodePort):
@@ -205,12 +214,21 @@ class CuttingLine(QGraphicsPathItem):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # 抗锯齿
         painter.setPen(self._pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(self.path())
 
-        poly = QPolygonF(self.line_points)
-        painter.drawPolyline(poly)
+    def clear_points(self):
+        self.line_points.clear()
+        self.setPath(QPainterPath())
+        self.prepareGeometryChange()
+        self.update()
 
     def update_points(self, point: QPointF | QPoint):
         self.line_points.append(point)
+        poly = QPolygonF(self.line_points)
+        path = QPainterPath()
+        path.addPolygon(poly)
+        self.setPath(path)
+        self.prepareGeometryChange() # 通知视图更新，重新绘制，否则不会更新
         self.update()
 
     def remove_intersect_edges(self, edges: list[NodeEdge]):
