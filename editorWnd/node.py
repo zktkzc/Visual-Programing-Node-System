@@ -4,7 +4,8 @@ QGraphicsItem的子类
 from __future__ import annotations
 
 import abc
-from typing import TYPE_CHECKING, Union, List
+import string
+from typing import TYPE_CHECKING, Union, List, Any
 
 from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QPen, QColor, QBrush, QPainterPath, QFont
@@ -158,9 +159,21 @@ class GraphicNode(QGraphicsItem):
         self._title_item.setDefaultTextColor(self._title_color)
         self._title_item.setPos(self._title_padding, 0)
 
-        title_width = self._title_font_size * len(self._title)
+        title_width = self._title_font_size * (len(self._title) + self.__get_chinese_count(self._title))
         if self._node_width < title_width:
             self._node_width += title_width
+
+    def __get_chinese_count(self, s: str) -> int:
+        """
+        获取字符串中中文字符的数量
+        :param s: 字符串
+        :return: 中文字符的个数
+        """
+        __count = 0
+        for c in s:
+            if c.isalpha() and c not in string.ascii_letters:
+                __count += 1
+        return __count
 
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, self._node_width, self._node_height)
@@ -290,7 +303,7 @@ class Node(GraphicNode):
             self.output_pins = []
         return True
 
-    def input(self, index: int) -> Union[int, float, str, bool, None]:
+    def input(self, index: int) -> Any:
         """
         通过index获取pin中存储的值，如果pin的值为空，需要从与该port相关联的port中来取值
         :param index: 索引
@@ -307,7 +320,7 @@ class Node(GraphicNode):
             port_value = port.get_value_from_connected_port()
         return port_value
 
-    def output(self, index: int, value: Union[int, float, str, bool]):
+    def output(self, index: int, value: Any):
         """
         设置输出值，并传递给下一个相连的节点的port
         :param value: 要设置的值
@@ -319,6 +332,15 @@ class Node(GraphicNode):
             print(f'Node: {self.node_title}\'s {index}th port is not a data port')
             return None
         self.out_ports[index].set_port_value(value)
+
+    def exec_input(self, index) -> Union[bool, None]:
+        pin = self.input_pins[index]
+        if not pin.pin_type == Pin.PinType.EXEC:
+            print(f'节点: {self.node_title}的第{index}个端口不是一个执行端口')
+            return None
+        # 如果是，则获取该端口连接的节点
+        port = self.in_ports[index]
+        return port.get_port_value()
 
     def exec_output(self, index: int):
         """
@@ -334,4 +356,5 @@ class Node(GraphicNode):
         port = self.out_ports[index]
         connected_ports = port.get_connected_ports()
         for port in connected_ports:
+            port.set_port_value(True)
             port.parent_node.run_node()

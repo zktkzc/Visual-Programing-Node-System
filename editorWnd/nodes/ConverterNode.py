@@ -76,3 +76,18 @@ class Float2StringNode(Node):
 
     def run_node(self):
         self.output(0, str(self.input(0)))
+
+
+class Class2StringNode(Node):
+    pkg_name = '节点转换'
+    node_title = '类转字符串'
+    node_description = '将类转换为字符串'
+    input_pins = [
+        NodeInput(pin_type=Pin.PinType.DATA, pin_name='对象', pin_class=DTypes.Class)
+    ]
+    output_pins = [
+        NodeOutput(pin_type=Pin.PinType.DATA, pin_name='字符串', pin_class=DTypes.String)
+    ]
+
+    def run_node(self):
+        self.output(0, str(self.input(0)))

@@ -35,6 +35,7 @@ class NodePort(QGraphicsItem):
         self._connected_ports: list[NodePort] = connected_ports if connected_ports is not None else []
         self._port_label: str = port_label
         self._hide_icon: bool = hide_icon
+        self._scene: Union[Scene, None] = None
         self.port_class = port_class
         self.port_color: str = port_color
         self.port_type: int = port_type
@@ -82,6 +83,7 @@ class NodePort(QGraphicsItem):
     def new_session(self, session_id: int):
         self._session_id = session_id
         self._has_set_value = False
+        self._port_value = None
 
     def is_connected(self) -> bool:
         return len(self._edges) > 0
