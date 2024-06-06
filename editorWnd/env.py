@@ -10,6 +10,8 @@ from editorWnd.node_lib import NodeClsLib
 
 
 class ENV:
+    cls_lst: Dict[str, Type[Node]] = {}
+
     @staticmethod
     def init_node_env():
         node_cls_lst: List[Type] = []
@@ -24,7 +26,12 @@ class ENV:
             for cls_name, cls in inspect.getmembers(sys.modules[f'editorWnd.nodes.{module_name}'], inspect.isclass):
                 if cls_name != 'Node' and issubclass(cls, Node):
                     node_cls_lst.append(cls)
+                    ENV.cls_lst[cls_name] = cls
         NodeClsLib.register_nodes(node_cls_lst)
+
+    @staticmethod
+    def get_cls_by_name(cls_name: str) -> Type[Node]:
+        return ENV.cls_lst.get(cls_name, None)
 
     @staticmethod
     def get_registered_node_cls() -> List[Type]:

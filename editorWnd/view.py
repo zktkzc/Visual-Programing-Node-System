@@ -4,7 +4,7 @@ QGraphicsView的子类，是scene的容器
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Union, List, Tuple, Dict, Any
+from typing import TYPE_CHECKING, Union, List, Tuple, Dict, Any, Type
 
 import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
@@ -98,6 +98,8 @@ class View(QGraphicsView):
             self.__run_graph()
         elif event.key() == Qt.Key.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.__save_graph()
+        elif event.key() == Qt.Key.Key_F and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+            self.__load_graph()
         super().keyPressEvent(event)
 
     def __save_graph(self):
@@ -109,11 +111,54 @@ class View(QGraphicsView):
         for edge in self._edges:
             data['edges'].append(edge.to_string())
         json_str = json.dumps(data)
-        with open('../graph.json', 'w') as f:
+        with open('graph.json', 'w') as f:
             f.write(json_str)
+        print('视图: 数据保存成功')
+
+    def __clear_graph(self):
+        self._session_id = 0
+        for node in self._nodes:
+            node.remove_self()
+        for edge in self._edges:
+            edge.remove_self()
+        self._nodes = []
+        self._edges = []
+        self.update()
 
     def __load_graph(self):
-        pass
+        self.__clear_graph()
+        data = json.loads(open('graph.json', 'r').read())
+        nodes = data['nodes']
+        edges = data['edges']
+        node_id_obj: Dict[int, Union[GraphicNode, Node]] = {}
+        for node in nodes:
+            # 获取节点类
+            cls = ENV.get_cls_by_name(node['class'])
+            # 创建节点并添加节点对象
+            node_obj = self.__add_node_with_cls(cls, node['pos'])
+            node_id = int(node['id'])
+            node_id_obj[node_id] = node_obj
+            # 设置节点id
+            node_obj.set_node_id(node_id)
+            # 设置widget的值
+            port_value = node['port_values']
+            for index,value in port_value.items():
+                port = node_obj.get_input_port(int(index))
+                port.set_widget_value(value)
+
+        for edge in edges:
+            source_node = node_id_obj[edge['source_node_id']]
+            dest_node = node_id_obj[edge['dest_node_id']]
+            source_port = source_node.get_output_port(edge['source_port_index'])
+            dest_port = dest_node.get_input_port(edge['dest_port_index'])
+            self.add_node_edge(source_port, dest_port)
+
+        print('视图: 数据加载成功')
+
+    def __add_node_with_cls(self, cls: Type[Union[GraphicNode, Node]], pos: Tuple[float, float]) -> Union[GraphicNode, Node]:
+        node = cls()
+        self.add_node(node, pos)
+        return node
 
     def __run_graph(self):
         # 找到开始运行节点，如果没有则提示
@@ -299,13 +344,13 @@ class View(QGraphicsView):
         self._view_scale = 1.0
 
     def add_node(self, node: GraphicNode, pos: Tuple[float, float] = (0, 0)):
-        '''
+        """
         添加节点
         :return:
-        '''
+        """
         if isinstance(node, BeginNode):
             if self._has_begin_node:
-                print('View -- Add Graph Debug: BeginNode already exists')
+                print('视图: 添加节点失败，【开始运行】节点已经存在了')
                 return
             self._has_begin_node = True
             self._begin_node = node

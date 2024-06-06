@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 
 class NodeListWidget(QTreeWidget):
     def __init__(self, data: dict, parent=None):
-        '''
+        """
         data = {
             'package name': [
                 'node title': Nodecls,
@@ -12,7 +12,7 @@ class NodeListWidget(QTreeWidget):
         }
         :param data:
         :param parent:
-        '''
+        """
         super().__init__(parent)
         self.resize(200, 300)
         self.setColumnCount(1)
@@ -30,6 +30,7 @@ class NodeListWidget(QTreeWidget):
             for node_title in self.data[pkg_name].keys():
                 node_item = QTreeWidgetItem([node_title])
                 node_item.setData(0, Qt.ItemDataRole.UserRole, self.data[pkg_name][node_title])
+                node_item.setToolTip(0, self.data[pkg_name][node_title]().node_description)
                 item.addChild(node_item)
             items.append(item)
         self.insertTopLevelItems(0, items)

@@ -1,6 +1,6 @@
-'''
+"""
 QGraphicsItem的子类
-'''
+"""
 from __future__ import annotations
 
 import abc
@@ -277,6 +277,9 @@ class Node(GraphicNode):
             [self.output_pins[i].init_port(i) for i in range(len(self.output_pins))]
         super().__init__(title=self.node_title, param_ports=self.in_ports, output_ports=self.out_ports, is_pure=True)
 
+    def set_node_id(self, node_id: int):
+        self.node_id = node_id
+
     @abc.abstractmethod
     def run_node(self):
         pass
@@ -295,13 +298,13 @@ class Node(GraphicNode):
 
     def is_validate(self) -> bool:
         if self.node_title == '':
-            print('Node: node title could not be empty')
+            print('节点: 节点标题不能为空')
             return False
         if self.node_title is None:
-            print('Node: node title could not be None')
+            print('节点: 节点标题不能为None')
             return False
         if self.input_pins is None:
-            print('Node: input pins could not be None')
+            print('节点: 输入端口不能为None')
             return False
         if self.output_pins is None:
             self.output_pins = []
@@ -315,7 +318,7 @@ class Node(GraphicNode):
         """
         pin = self.input_pins[index]
         if not pin.pin_type == Pin.PinType.DATA:
-            print(f'Node: {self.node_title}\'s {index}th port is not a data port')
+            print(f'节点: {self.node_title}的第{index}个端口不是一个数据端口')
             return None
         port = self.in_ports[index]
         port_value = port.get_default_value()
@@ -333,7 +336,7 @@ class Node(GraphicNode):
         """
         pin = self.output_pins[index]
         if not pin.pin_type == Pin.PinType.DATA:
-            print(f'Node: {self.node_title}\'s {index}th port is not a data port')
+            print(f'节点: {self.node_title}的第{index}个端口不是一个数据端口')
             return None
         self.out_ports[index].set_port_value(value)
 
@@ -354,7 +357,7 @@ class Node(GraphicNode):
         """
         pin = self.output_pins[index]
         if not pin.pin_type == Pin.PinType.EXEC:
-            print(f'Node: {self.node_title}\'s {index}th port is not a exec port')
+            print(f'节点: {self.node_title}的第{index}个端口不是一个执行端口')
             return
         # 如果是，则获取该端口连接的节点
         port = self.out_ports[index]
@@ -381,6 +384,6 @@ class Node(GraphicNode):
         }
         for index, port in enumerate(self.in_ports):
             value = port.get_default_value()
-            if value:
+            if value is not None:
                 node['port_values'][index] = value
         return node

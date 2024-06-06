@@ -128,6 +128,12 @@ class NodePort(QGraphicsItem):
                 self._port_value = self._default_widget.isChecked()
                 return self._port_value
 
+    def set_widget_value(self, value: Any):
+        if isinstance(self._default_widget, QLineEdit):
+            self._default_widget.setText(str(value))
+        elif isinstance(self._default_widget, QCheckBox):
+            self._default_widget.setChecked(value)
+
     def get_value_from_connected_port(self) -> Union[str, int, float, bool, None]:
         if self.is_connected():
             connected_port = self._connected_ports[0]
