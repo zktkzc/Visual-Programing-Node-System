@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QGuiApplication, QAction
+from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow
 
 from editorWnd.env import ENV
@@ -25,15 +25,41 @@ class VisualGraphWindow(QMainWindow):
         # 菜单栏
         menubar = self.menuBar()
         file_menu = menubar.addMenu('文件(&F)')
-        self.new_action = QAction(text='&新建', parent=self)
+        self.new_graph_action = QAction(text='&新建图形', parent=self)
+        self.new_graph_action.setShortcuts([QKeySequence('Ctrl+N')])
+        file_menu.addAction(self.new_graph_action)
+        self.new_window_action = QAction(text='&新建窗口', parent=self)
+        self.new_window_action.setShortcuts([QKeySequence('Ctrl+Shift+N')])
+        file_menu.addAction(self.new_window_action)
+        file_menu.addSeparator()
         self.open_action = QAction(text='&打开', parent=self)
+        self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
+        file_menu.addAction(self.open_action)
+        recent_menu = file_menu.addMenu('&最近打开')
+        # todo 最近打开文件功能等保存保存功能完成以后进行实现
+        file_menu.addSeparator()
+        self.set_workspace_action = QAction(text='&设置工作区', parent=self)
+        file_menu.addAction(self.set_workspace_action)
+        file_menu.addSeparator()
         self.save_action = QAction(text='&保存', parent=self)
-        file_menu.addActions([self.new_action, self.open_action, self.save_action])
+        self.save_action.setShortcuts([QKeySequence('Ctrl+S')])
+        file_menu.addAction(self.save_action)
+        self.save_as_action = QAction(text='&另存为', parent=self)
+        self.save_as_action.setShortcuts([QKeySequence('Ctrl+Shift+S')])
+        file_menu.addAction(self.save_as_action)
+        self.save_all_action = QAction(text='&全部保存', parent=self)
+        self.save_all_action.setShortcuts([QKeySequence('Ctrl+Alt+S')])
+        file_menu.addAction(self.save_all_action)
+        file_menu.addSeparator()
+        self.quit_action = QAction(text='&退出', parent=self)
+        self.quit_action.setShortcuts([QKeySequence('Alt+F4')])
+        file_menu.addAction(self.quit_action)
 
         edit_menu = menubar.addMenu('编辑(&E)')
         self.copy_action = QAction(text='&复制', parent=self)
         self.paste_action = QAction(text='&粘贴', parent=self)
         self.cut_action = QAction(text='&剪切', parent=self)
+        edit_menu.addSeparator()
         self.undo_action = QAction(text='&撤销', parent=self)
         self.redo_action = QAction(text='&重做', parent=self)
         edit_menu.addActions([self.copy_action, self.paste_action, self.cut_action, self.undo_action, self.redo_action])
