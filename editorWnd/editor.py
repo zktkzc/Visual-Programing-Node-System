@@ -3,9 +3,11 @@
 """
 from __future__ import annotations
 
+import os
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
-from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow
+from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog
 
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
@@ -19,8 +21,8 @@ class VisualGraphWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle('可视化编程编辑器')
         self.resize(1200, 700)
-        editor = Editor(self)
-        self.setCentralWidget(editor)
+        self.editor = Editor(self)
+        self.setCentralWidget(self.editor)
         self.__center()
         # 菜单栏
         menubar = self.menuBar()
@@ -34,6 +36,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addSeparator()
         self.open_action = QAction(text='&打开', parent=self)
         self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
+        self.open_action.triggered.connect(self.open)
         file_menu.addAction(self.open_action)
         recent_menu = file_menu.addMenu('&最近打开')
         # todo 最近打开文件功能等保存保存功能完成以后进行实现
@@ -46,6 +49,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addAction(self.save_action)
         self.save_as_action = QAction(text='&另存为', parent=self)
         self.save_as_action.setShortcuts([QKeySequence('Ctrl+Shift+S')])
+        self.save_as_action.triggered.connect(self.__save_as)
         file_menu.addAction(self.save_as_action)
         self.save_all_action = QAction(text='&全部保存', parent=self)
         self.save_all_action.setShortcuts([QKeySequence('Ctrl+Alt+S')])
@@ -71,6 +75,19 @@ class VisualGraphWindow(QMainWindow):
         help_menu = menubar.addMenu('帮助(&H)')
 
         self.show()
+
+    def __save_as(self):
+        filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.getcwd(), 'Visual Graph File(*.vgf)')
+        if filepath == '':
+            # 取消
+            return
+        self.editor.save_graph(filepath)
+
+    def open(self):
+        filepath, filetype = QFileDialog.getOpenFileName(self, '打开', os.getcwd(), 'Visual Graph File(*.vgf)')
+        if filepath == '':
+            return
+        self.editor.open_graph(filepath)
 
     def __center(self):
         screen = QGuiApplication.primaryScreen().geometry()
@@ -109,6 +126,12 @@ class Editor(QWidget):
 
         node = GraphicNode(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
         self.view.add_node(node, pos)
+
+    def open_graph(self, filepath: str):
+        self.view.load_graph(filepath)
+
+    def save_graph(self, filepath: str):
+        self.view.save_graph(filepath)
 
     def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):
         node = ENV.get_registered_node_cls()[1]()

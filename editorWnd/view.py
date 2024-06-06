@@ -97,12 +97,12 @@ class View(QGraphicsView):
         elif event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.__run_graph()
         elif event.key() == Qt.Key.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.__save_graph()
+            self.save_graph()
         elif event.key() == Qt.Key.Key_F and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.__load_graph()
+            self.load_graph()
         super().keyPressEvent(event)
 
-    def __save_graph(self):
+    def save_graph(self, filepath: str = 'graph.json'):
         data: Dict[str, Any] = {'graph_name': '', 'time': '', 'nodes': [], 'edges': []}
         # node
         for node in self._nodes:
@@ -111,7 +111,7 @@ class View(QGraphicsView):
         for edge in self._edges:
             data['edges'].append(edge.to_string())
         json_str = json.dumps(data)
-        with open('graph.json', 'w') as f:
+        with open(filepath, 'w') as f:
             f.write(json_str)
         print('视图: 数据保存成功')
 
@@ -125,9 +125,9 @@ class View(QGraphicsView):
         self._edges = []
         self.update()
 
-    def __load_graph(self):
+    def load_graph(self, filepath: str = 'graph.json'):
         self.__clear_graph()
-        data = json.loads(open('graph.json', 'r').read())
+        data = json.loads(open(filepath, 'r').read())
         nodes = data['nodes']
         edges = data['edges']
         node_id_obj: Dict[int, Union[GraphicNode, Node]] = {}
