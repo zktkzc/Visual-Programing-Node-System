@@ -72,9 +72,11 @@ class View(QGraphicsView):
         proxy.setZValue(2)
         self.node_list_widget.setGeometry(0, 0, 200, 300)
         self.__hide_node_list_widget()
-        self.node_list_widget.itemDoubleClicked.connect(self.__node_selected)
+        self.node_list_widget.itemClicked.connect(self.__node_selected)
 
     def __node_selected(self, item: PySide6.QtWidgets.QTreeWidgetItem, column):
+        if item.childCount() > 0:
+            item.setExpanded(not item.isExpanded())
         if item.data(0, Qt.ItemDataRole.UserRole) is not None:
             node = item.data(0, Qt.ItemDataRole.UserRole)()
             self.add_node(node, (self._pos_show_node_list_widget.x(), self._pos_show_node_list_widget.y()))
@@ -191,10 +193,18 @@ class View(QGraphicsView):
             self._scene.addItem(self._dragging_edge)
 
     def mouseMoveEvent(self, event):
+        item = self.itemAt(event.pos())
+        if isinstance(item, NodePort):
+            if not item.hide_icon:
+                QApplication.setOverrideCursor(Qt.CursorShape.PointingHandCursor)
+        else:
+            if not self._cutting_mode:
+                QApplication.setOverrideCursor(Qt.CursorShape.ArrowCursor)
         if self._drag_edge_mode:
             cur_pos = self.mapToScene(event.pos())
             self._dragging_edge.update_position((cur_pos.x(), cur_pos.y()))
         elif self._cutting_mode:
+            QApplication.setOverrideCursor(Qt.CursorShape.CrossCursor)
             self._cutting_line.update_points(self.mapToScene(event.pos()))
         else:
             super().mouseMoveEvent(event)

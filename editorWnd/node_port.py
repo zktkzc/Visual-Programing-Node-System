@@ -1,6 +1,6 @@
-'''
+"""
 Node Port的实现
-'''
+"""
 from __future__ import annotations
 
 import abc
@@ -34,7 +34,7 @@ class NodePort(QGraphicsItem):
         self._edges: List[NodeEdge] = edges if edges is not None else []
         self._connected_ports: list[NodePort] = connected_ports if connected_ports is not None else []
         self._port_label: str = port_label
-        self._hide_icon: bool = hide_icon
+        self.hide_icon: bool = hide_icon
         self._scene: Union[Scene, None] = None
         self.port_class = port_class
         self.port_color: str = port_color
@@ -62,15 +62,25 @@ class NodePort(QGraphicsItem):
         if isinstance(self._default_widget, QLineEdit):
             self._default_widget.setTextMargins(0, 0, 0, 0)
             self._default_widget.setFixedWidth(30)
+            self._default_widget.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            self._default_widget.setStyleSheet(
+                '''
+                background-color: transparent;
+                border: 1px solid #9499b3;
+                color: #9499b3;
+                '''
+            )
             self.port_width += 25
         elif isinstance(self._default_widget, QCheckBox):
             self._default_widget.setFixedSize(20, 20)
             self._default_widget.setStyleSheet(
                 '''
                 QCheckBox::indicator {
-                    width: 20px; 
+                    width: 20px;
                     height: 20px;
-                    background: none;
+                }
+                QCheckBox {
+                    background-color: transparent;
                 }
                 '''
             )
@@ -177,7 +187,7 @@ class NodePort(QGraphicsItem):
         pass
 
     def get_port_pos(self) -> Union[QPointF, None]:
-        if self._hide_icon:
+        if self.hide_icon:
             return None
         # 获得本身在scene内的位置
         self._port_pos = self.scenePos()
@@ -319,7 +329,7 @@ class ParamPort(NodePort):
                             0.15 * self.port_icon_size)
 
     def paint(self, painter, option, widget=...):
-        if not self._hide_icon:
+        if not self.hide_icon:
             # 圆
             painter.setPen(self._default_pen)
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -358,7 +368,7 @@ class ParamPort(NodePort):
             self._default_widget.setValidator(QDoubleValidator())
         proxy = QGraphicsProxyWidget(self)
         proxy.setWidget(self._default_widget)
-        if self._hide_icon:
+        if self.hide_icon:
             proxy.setPos(10, 0)
         else:
             proxy.setPos(self.port_icon_size + self.port_label_size, 0)

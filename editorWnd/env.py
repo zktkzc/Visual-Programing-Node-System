@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 from collections import defaultdict
-from typing import Type
+from typing import Type, Dict, List
 
 import editorWnd.nodes
 from editorWnd.node import Node
@@ -12,7 +12,7 @@ from editorWnd.node_lib import NodeClsLib
 class ENV:
     @staticmethod
     def init_node_env():
-        node_cls_lst: list[Type] = []
+        node_cls_lst: List[Type] = []
         # 获得nodes软件包下的文件名，并导入
         path_folder = os.path.dirname(editorWnd.nodes.__file__)
         for module in os.listdir(path_folder):
@@ -27,11 +27,11 @@ class ENV:
         NodeClsLib.register_nodes(node_cls_lst)
 
     @staticmethod
-    def get_registered_node_cls() -> list[Type]:
+    def get_registered_node_cls() -> List[Type]:
         return NodeClsLib.node_cls_list
 
     @staticmethod
-    def get_nodelib_json_data() -> dict[str, dict[str, Type]]:
+    def get_nodelib_json_data() -> Dict[str, Dict[str, Type]]:
         data = defaultdict(dict)
         for cls in ENV.get_registered_node_cls():
             pkg_name = cls.pkg_name

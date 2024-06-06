@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect, QApplication
 
 from editorWnd.node_port import NodePort
 
