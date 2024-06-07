@@ -1,6 +1,6 @@
-'''
+"""
 QGraphicsView的子类，是scene的容器
-'''
+"""
 from __future__ import annotations
 
 import json
@@ -65,6 +65,9 @@ class View(QGraphicsView):
         self._begin_node: Union[BeginNode, None] = None
         # 当前graph保存的路径
         self._saved_path: str = ''
+
+    def get_nodes(self) -> List[Union[GraphicNode, Node]]:
+        return self._nodes
 
     def set_saved_path(self, filepath: str):
         self._saved_path = filepath

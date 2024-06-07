@@ -5,11 +5,11 @@ from __future__ import annotations
 
 import os
 from functools import partial
-from typing import List
+from typing import List, Union
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
-from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog
+from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout
 
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
@@ -84,7 +84,33 @@ class VisualGraphWindow(QMainWindow):
         # 最近文件列表，只记录文件的绝对路径
         self.recent_files: List[str] = []
 
+        # tab栏
+        self.tabs = []
+        self.tab_widget = QTabWidget(self)
+        self.setCentralWidget(self.tab_widget)
+        self.add_a_tab()  # 默认添加一个tab
+        self.tab_widget.currentChanged.connect(self.tab_changed)
+        self.tab_index: int = 0
+
         self.show()
+
+    def tab_changed(self, index: int):
+        self.tab_index = index
+        self.editor = self.tabs[index]
+
+    def add_a_tab(self, filepath: str = '', from_file: bool = False):
+        tab_view = Editor(self)
+        if filepath == '':
+            tab_title = f'未命名-{len(self.tabs) + 1}'
+        else:
+            tab_title = os.path.basename(filepath)
+        self.tab_widget.addTab(tab_view, tab_title)
+        self.tabs.append(tab_view)
+        self.set_current_editor(tab_view, self.tab_widget.count() - 1)
+
+    def set_current_editor(self, editor: Editor = None, index: int = 0):
+        self.editor = editor
+        self.tab_widget.setCurrentWidget(self.tabs[index])
 
     def __clear_recent_files(self):
         self.recent_files = []
@@ -134,6 +160,11 @@ class VisualGraphWindow(QMainWindow):
         filepath, filetype = QFileDialog.getOpenFileName(self, '打开', self._last_open_path, 'Visual Graph File(*.vgf)')
         if filepath == '':
             return
+        if self.editor.view.get_saved_path() != '':
+            # 创建一个新的tab
+            self.add_a_tab(filepath=filepath, from_file=True)
+        else:
+            self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
         self.editor.open_graph(filepath)
         self._last_open_path = os.path.dirname(filepath)
         self.__add_to_recent_files(filepath)
@@ -147,6 +178,9 @@ class VisualGraphWindow(QMainWindow):
 class Editor(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.scene: Union[Scene, None] = None
+        self.view: Union[View, None] = None
+        self.layout: Union[QLayout, None] = None
         ENV.init_node_env()
         self.setup_editor()
 
@@ -164,20 +198,29 @@ class Editor(QWidget):
         self.show()
 
     def debug_add_node(self, pos: tuple[float, float] = (0, 0)):
-        param_ports: list[ParamPort] = []
-        param_ports.append(ParamPort('宽度', 'float', '#99ff22'))
-        param_ports.append(ParamPort('高度', 'float', '#99ff22'))
-        param_ports.append(ParamPort('计数', 'int', '#00ffee'))
+        param_ports: list[ParamPort] = [
+            ParamPort('宽度', 'float', '#99ff22'),
+            ParamPort('高度', 'float', '#99ff22'),
+            ParamPort('计数', 'int', '#00ffee')
+        ]
 
-        output_params: list[OutputPort] = []
-        output_params.append(OutputPort('面积', 'float', '#99ff22'))
-        output_params.append(OutputPort('数量', 'int', '#00ffee'))
+        output_params: list[OutputPort] = [
+            OutputPort('面积', 'float', '#99ff22'),
+            OutputPort('数量', 'int', '#00ffee')
+        ]
 
         node = GraphicNode(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
         self.view.add_node(node, pos)
 
+    def center(self):
+        if len(self.view.get_nodes()) > 0:
+            pos = self.view.get_nodes()[0].scenePos()
+            width, height = self.view.geometry().width(), self.view.geometry().height()
+            self.view.centerOn(QPointF(pos.x() + width / 2 - 100, pos.y() + height / 2 - 100))
+
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)
+        self.center()
 
     def save_graph(self) -> bool:
         return self.view.save_directly()

@@ -52,11 +52,11 @@ class Scene(QGraphicsScene):
         painter.drawLines(dark_lines)
 
     def calc_grid_lines(self, rect: Union[PySide6.QtCore.QRectF, PySide6.QtCore.QRect]):
-        '''
+        """
         计算出所有要画的表格线
         :param rect:
         :return:
-        '''
+        """
         left, right, top, bottom = math.floor(rect.left()), math.floor(rect.right()), math.floor(
             rect.top()), math.floor(rect.bottom())
         # 最左边的线

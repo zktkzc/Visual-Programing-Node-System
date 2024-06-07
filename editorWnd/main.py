@@ -60,6 +60,40 @@ GLOBAL_STYLESHEET = '''
     QMenu::item:selected {
         background-color: #888888;
     }
+    
+    QWidget {
+        background-color: #151515;
+        margin: 0px;
+        padding: 0px;
+    }
+    
+    QTabBar::tab {
+        background-color: #151515;
+        color: #888888;
+        border-top: 1px solid white;
+        border-left: 1px solid white;
+        border-right: 1px solid white;
+        font-size: 14px;
+        width: 100px;
+        height: 20px;
+        spacing: 10px;
+    }
+    
+    QTabBar::tab:selected {
+        background-color: #a8a8a8;
+        color: black;
+        border-left: none;
+        border-right: none;
+    }
+    
+    QTabWidget::tab-bar {
+        background-color: #151515;
+        left: 10px;
+    }
+    
+    QTabWidget::pane {
+        border: 1px solid gray;
+    }
 '''
 
 if __name__ == '__main__':

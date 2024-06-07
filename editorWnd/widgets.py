@@ -21,8 +21,7 @@ class NodeListWidget(QTreeWidget):
         self.data = data
         self.construct_tree()
 
-
-    def construct_tree(self, filter=None):
+    def construct_tree(self):
         self.clear()
         items = []
         for pkg_name in self.data.keys():
@@ -35,5 +34,3 @@ class NodeListWidget(QTreeWidget):
             items.append(item)
         self.insertTopLevelItems(0, items)
         self.sortItems(0, Qt.SortOrder.AscendingOrder)
-
-
