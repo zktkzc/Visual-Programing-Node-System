@@ -118,9 +118,15 @@ class NodePort(QGraphicsItem):
         else:
             if isinstance(self._default_widget, QLineEdit):
                 if self.port_class == DTypes.Integer:
-                    self._port_value = int(self._default_widget.text())
+                    try:
+                        self._port_value = int(self._default_widget.text())
+                    except:
+                        pass
                 elif self.port_class == DTypes.Float:
-                    self._port_value = float(self._default_widget.text())
+                    try:
+                        self._port_value = float(self._default_widget.text())
+                    except:
+                        pass
                 else:
                     self._port_value = self._default_widget.text()
                 return self._port_value
