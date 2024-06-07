@@ -63,6 +63,25 @@ class View(QGraphicsView):
         # 是否有开始运行节点
         self._has_begin_node: bool = False
         self._begin_node: Union[BeginNode, None] = None
+        # 当前graph保存的路径
+        self._saved_path: str = ''
+
+    def set_saved_path(self, filepath: str):
+        self._saved_path = filepath
+
+    def get_saved_path(self) -> str:
+        return self._saved_path
+
+    def save_directly(self) -> bool:
+        """
+        直接保存当前graph
+        :return:
+        """
+        path = self.get_saved_path()
+        if path == '':
+            return False
+        self.save_graph(path)
+        return True
 
     def __setup_node_list_widget(self):
         # 获取data
@@ -113,19 +132,23 @@ class View(QGraphicsView):
         json_str = json.dumps(data)
         with open(filepath, 'w') as f:
             f.write(json_str)
-        print('视图: 数据保存成功')
+        self.set_saved_path(filepath)
+        print('视图: 数据保存成功 ->', filepath)
 
     def __clear_graph(self):
         self._session_id = 0
-        for node in self._nodes:
+        for node in self._nodes.copy():
             node.remove_self()
-        for edge in self._edges:
+        for edge in self._edges.copy():
             edge.remove_self()
         self._nodes = []
         self._edges = []
+        self._scene.update()
         self.update()
 
     def load_graph(self, filepath: str = 'graph.json'):
+        if filepath == self.get_saved_path():
+            return
         self.__clear_graph()
         data = json.loads(open(filepath, 'r').read())
         nodes = data['nodes']
@@ -152,8 +175,9 @@ class View(QGraphicsView):
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
             self.add_node_edge(source_port, dest_port)
+        self.set_saved_path(filepath)
 
-        print('视图: 数据加载成功')
+        print('视图: 数据加载成功 ->', filepath)
 
     def __add_node_with_cls(self, cls: Type[Union[GraphicNode, Node]], pos: Tuple[float, float]) -> Union[GraphicNode, Node]:
         node = cls()

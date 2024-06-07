@@ -36,7 +36,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addSeparator()
         self.open_action = QAction(text='&打开', parent=self)
         self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
-        self.open_action.triggered.connect(self.open)
+        self.open_action.triggered.connect(self.__open)
         file_menu.addAction(self.open_action)
         recent_menu = file_menu.addMenu('&最近打开')
         # todo 最近打开文件功能等保存保存功能完成以后进行实现
@@ -46,6 +46,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addSeparator()
         self.save_action = QAction(text='&保存', parent=self)
         self.save_action.setShortcuts([QKeySequence('Ctrl+S')])
+        self.save_action.triggered.connect(self.save)
         file_menu.addAction(self.save_action)
         self.save_as_action = QAction(text='&另存为', parent=self)
         self.save_as_action.setShortcuts([QKeySequence('Ctrl+Shift+S')])
@@ -76,14 +77,22 @@ class VisualGraphWindow(QMainWindow):
 
         self.show()
 
+    def save(self):
+        if not self.editor.save_graph():
+            filepath, filetype = QFileDialog.getSaveFileName(self, '保存', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
+            if filepath == '':
+                # 取消
+                return
+            self.editor.save_graph_as(filepath)
+
     def __save_as(self):
-        filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.getcwd(), 'Visual Graph File(*.vgf)')
+        filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
         if filepath == '':
             # 取消
             return
-        self.editor.save_graph(filepath)
+        self.editor.save_graph_as(filepath)
 
-    def open(self):
+    def __open(self):
         filepath, filetype = QFileDialog.getOpenFileName(self, '打开', os.getcwd(), 'Visual Graph File(*.vgf)')
         if filepath == '':
             return
@@ -130,7 +139,10 @@ class Editor(QWidget):
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)
 
-    def save_graph(self, filepath: str):
+    def save_graph(self) -> bool:
+        return self.view.save_directly()
+
+    def save_graph_as(self, filepath: str):
         self.view.save_graph(filepath)
 
     def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):

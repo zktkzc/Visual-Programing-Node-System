@@ -1,7 +1,8 @@
-import sys
 import os
+import sys
 
 from PySide6.QtWidgets import QApplication
+
 from editorWnd.editor import VisualGraphWindow
 
 GLOBAL_STYLESHEET = '''

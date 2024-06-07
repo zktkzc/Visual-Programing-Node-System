@@ -95,6 +95,7 @@ class GraphicNode(QGraphicsItem):
         # 删除自己
         self._scene.removeItem(self)
         self._scene.get_view().remove_node(self)
+        self.update()
 
     def add_connected_node(self, node: GraphicNode, edge: NodeEdge):
         '''
