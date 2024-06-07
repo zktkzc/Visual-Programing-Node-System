@@ -49,6 +49,14 @@ GLOBAL_STYLESHEET = '''
         background-color: transparent;
     }
     
+    QMenu::item::disabled {
+        color: #888888;
+    }
+    
+    QMenu::item::disabled::selected {
+        background-color: transparent;
+    }
+    
     QMenu::item:selected {
         background-color: #888888;
     }

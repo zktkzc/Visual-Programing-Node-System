@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+from typing import List
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
@@ -38,15 +39,17 @@ class VisualGraphWindow(QMainWindow):
         self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
         self.open_action.triggered.connect(self.__open)
         file_menu.addAction(self.open_action)
-        recent_menu = file_menu.addMenu('&最近打开')
-        # todo 最近打开文件功能等保存保存功能完成以后进行实现
+        self.recent_menu = file_menu.addMenu('&最近打开')
+        self.recent_menu.aboutToShow.connect(self.__show_recent_files)
+        self.clear_recent_files_action = QAction(text='清除历史记录', parent=self)
+        self.clear_recent_files_action.triggered.connect(self.__clear_recent_files)
         file_menu.addSeparator()
         self.set_workspace_action = QAction(text='&设置工作区', parent=self)
         file_menu.addAction(self.set_workspace_action)
         file_menu.addSeparator()
         self.save_action = QAction(text='&保存', parent=self)
         self.save_action.setShortcuts([QKeySequence('Ctrl+S')])
-        self.save_action.triggered.connect(self.save)
+        self.save_action.triggered.connect(self.__save)
         file_menu.addAction(self.save_action)
         self.save_as_action = QAction(text='&另存为', parent=self)
         self.save_as_action.setShortcuts([QKeySequence('Ctrl+Shift+S')])
@@ -75,15 +78,46 @@ class VisualGraphWindow(QMainWindow):
 
         help_menu = menubar.addMenu('帮助(&H)')
 
+        # 上次打开的路径
+        self._last_open_path: str = os.getcwd()
+        # 最近文件列表，只记录文件的绝对路径
+        self.recent_files: List[str] = []
+
         self.show()
 
-    def save(self):
+    def __clear_recent_files(self):
+        self.recent_files = []
+        self.__show_recent_files()
+
+    def __show_recent_files(self):
+        self.recent_menu.clear() # 清除菜单项
+        actions: List[QAction] = []
+        for filepath in self.recent_files:
+            action = QAction(text=filepath, parent=self)
+            action.triggered.connect(self.editor.open_graph(filepath))
+            actions.append(action)
+        if len(actions) > 0:
+            self.recent_menu.addActions(actions)
+        else:
+            no_recent_file = QAction(text='没有最近打开的文件', parent=self)
+            no_recent_file.setDisabled(True)
+            self.recent_menu.addAction(no_recent_file)
+        self.recent_menu.addSeparator()
+        self.recent_menu.addAction(self.clear_recent_files_action)
+
+    def __add_to_recent_files(self, filepath: str):
+        if filepath in set(self.recent_files):
+            self.recent_files.remove(filepath)
+        self.recent_files.insert(0, filepath)
+
+    def __save(self):
         if not self.editor.save_graph():
             filepath, filetype = QFileDialog.getSaveFileName(self, '保存', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
             if filepath == '':
                 # 取消
                 return
             self.editor.save_graph_as(filepath)
+            self.__add_to_recent_files(filepath)
 
     def __save_as(self):
         filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
@@ -91,12 +125,15 @@ class VisualGraphWindow(QMainWindow):
             # 取消
             return
         self.editor.save_graph_as(filepath)
+        self.__add_to_recent_files(filepath)
 
     def __open(self):
-        filepath, filetype = QFileDialog.getOpenFileName(self, '打开', os.getcwd(), 'Visual Graph File(*.vgf)')
+        filepath, filetype = QFileDialog.getOpenFileName(self, '打开', self._last_open_path, 'Visual Graph File(*.vgf)')
         if filepath == '':
             return
         self.editor.open_graph(filepath)
+        self._last_open_path = os.path.dirname(filepath)
+        self.__add_to_recent_files(filepath)
 
     def __center(self):
         screen = QGuiApplication.primaryScreen().geometry()
