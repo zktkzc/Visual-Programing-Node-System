@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import os
 from functools import partial
-from typing import List, Union
+from typing import List, Union, Dict
 
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
@@ -38,7 +38,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addSeparator()
         self.open_action = QAction(text='&打开', parent=self)
         self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
-        self.open_action.triggered.connect(self.__open)
+        self.open_action.triggered.connect(self.__open_with_dialog)
         file_menu.addAction(self.open_action)
         self.recent_menu = file_menu.addMenu('&最近打开')
         self.recent_menu.aboutToShow.connect(self.__show_recent_files)
@@ -91,8 +91,12 @@ class VisualGraphWindow(QMainWindow):
         self.add_a_tab()  # 默认添加一个tab
         self.tab_widget.currentChanged.connect(self.tab_changed)
         self.tab_index: int = 0
+        self.opened_files: Dict[str, int] = {}
 
         self.show()
+
+    def record_file_opened(self, filepath: str, index: int):
+        self.opened_files[filepath] = index
 
     def tab_changed(self, index: int):
         self.tab_index = index
@@ -116,12 +120,15 @@ class VisualGraphWindow(QMainWindow):
         self.recent_files = []
         self.__show_recent_files()
 
+    def __load_recent_file(self, filepath: str):
+        self.__open(filepath)
+
     def __show_recent_files(self):
         self.recent_menu.clear()  # 清除菜单项
         actions: List[QAction] = []
         for filepath in self.recent_files:
             action = QAction(text=filepath, parent=self)
-            action.triggered.connect(partial(self.editor.open_graph, filepath))
+            action.triggered.connect(partial(self.__load_recent_file, filepath))
             actions.append(action)
         if len(actions) > 0:
             self.recent_menu.addActions(actions)
@@ -156,9 +163,16 @@ class VisualGraphWindow(QMainWindow):
         self.editor.save_graph_as(filepath)
         self.__add_to_recent_files(filepath)
 
-    def __open(self):
+    def __open_with_dialog(self):
         filepath, filetype = QFileDialog.getOpenFileName(self, '打开', self._last_open_path, 'Visual Graph File(*.vgf)')
         if filepath == '':
+            return
+        self.__open(filepath)
+
+    def __open(self, filepath: str):
+        index = self.opened_files.get(filepath, -1)
+        if index != -1:
+            self.tab_widget.setCurrentIndex(index)
             return
         if self.editor.view.get_saved_path() != '':
             # 创建一个新的tab
@@ -168,6 +182,7 @@ class VisualGraphWindow(QMainWindow):
         self.editor.open_graph(filepath)
         self._last_open_path = os.path.dirname(filepath)
         self.__add_to_recent_files(filepath)
+        self.record_file_opened(filepath, self.tab_index)
 
     def __center(self):
         screen = QGuiApplication.primaryScreen().geometry()

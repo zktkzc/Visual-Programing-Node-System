@@ -153,7 +153,8 @@ class View(QGraphicsView):
         if filepath == self.get_saved_path():
             return
         self.__clear_graph()
-        data = json.loads(open(filepath, 'r').read())
+        with open(filepath, 'r') as f:
+            data = json.loads(f.read())
         nodes = data['nodes']
         edges = data['edges']
         node_id_obj: Dict[int, Union[GraphicNode, Node]] = {}
