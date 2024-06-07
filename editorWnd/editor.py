@@ -29,8 +29,9 @@ class VisualGraphWindow(QMainWindow):
         # 菜单栏
         menubar = self.menuBar()
         file_menu = menubar.addMenu('文件(&F)')
-        self.new_graph_action = QAction(text='&新建图形', parent=self)
+        self.new_graph_action = QAction(text='&新建画布', parent=self)
         self.new_graph_action.setShortcuts([QKeySequence('Ctrl+N')])
+        self.new_graph_action.triggered.connect(self.add_a_tab)
         file_menu.addAction(self.new_graph_action)
         self.new_window_action = QAction(text='&新建窗口', parent=self)
         self.new_window_action.setShortcuts([QKeySequence('Ctrl+Shift+N')])
@@ -102,9 +103,9 @@ class VisualGraphWindow(QMainWindow):
         self.tab_index = index
         self.editor = self.tabs[index]
 
-    def add_a_tab(self, filepath: str = '', from_file: bool = False):
+    def add_a_tab(self, filepath: str = ''):
         tab_view = Editor(self)
-        if filepath == '':
+        if filepath == ''or isinstance(filepath, int):
             tab_title = f'未命名-{len(self.tabs) + 1}'
         else:
             tab_title = os.path.basename(filepath)
@@ -176,7 +177,7 @@ class VisualGraphWindow(QMainWindow):
             return
         if self.editor.view.get_saved_path() != '':
             # 创建一个新的tab
-            self.add_a_tab(filepath=filepath, from_file=True)
+            self.add_a_tab(filepath=filepath)
         else:
             self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
         self.editor.open_graph(filepath)
