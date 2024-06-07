@@ -59,6 +59,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addAction(self.save_as_action)
         self.save_all_action = QAction(text='&全部保存', parent=self)
         self.save_all_action.setShortcuts([QKeySequence('Ctrl+Alt+S')])
+        self.save_all_action.triggered.connect(self.__save_all)
         file_menu.addAction(self.save_all_action)
         file_menu.addSeparator()
         self.quit_action = QAction(text='&退出', parent=self)
@@ -144,6 +145,23 @@ class VisualGraphWindow(QMainWindow):
         if filepath in set(self.recent_files):
             self.recent_files.remove(filepath)
         self.recent_files.insert(0, filepath)
+
+    def __save_all(self):
+        for tab in self.tabs:
+            self.__save_in_tab(tab)
+
+    def __save_in_tab(self, tab: Editor):
+        if not tab.save_graph():
+            filepath, filetype = QFileDialog.getSaveFileName(self, '保存',
+                                                             os.path.join(os.getcwd(), 'untitled.vgf'),
+                                                             'Visual Graph File(*.vgf)')
+            if filepath == '':
+                # 取消
+                return
+            self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
+            self.record_file_opened(filepath, self.tab_index)
+            tab.save_graph_as(filepath)
+            self.__add_to_recent_files(filepath)
 
     def __save(self):
         if not self.editor.save_graph():
