@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+from functools import partial
 from typing import List
 
 from PySide6.QtCore import Qt
@@ -90,11 +91,11 @@ class VisualGraphWindow(QMainWindow):
         self.__show_recent_files()
 
     def __show_recent_files(self):
-        self.recent_menu.clear() # 清除菜单项
+        self.recent_menu.clear()  # 清除菜单项
         actions: List[QAction] = []
         for filepath in self.recent_files:
             action = QAction(text=filepath, parent=self)
-            action.triggered.connect(self.editor.open_graph(filepath))
+            action.triggered.connect(partial(self.editor.open_graph, filepath))
             actions.append(action)
         if len(actions) > 0:
             self.recent_menu.addActions(actions)
@@ -112,7 +113,8 @@ class VisualGraphWindow(QMainWindow):
 
     def __save(self):
         if not self.editor.save_graph():
-            filepath, filetype = QFileDialog.getSaveFileName(self, '保存', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
+            filepath, filetype = QFileDialog.getSaveFileName(self, '保存', os.path.join(os.getcwd(), 'untitled.vgf'),
+                                                             'Visual Graph File(*.vgf)')
             if filepath == '':
                 # 取消
                 return
@@ -120,7 +122,8 @@ class VisualGraphWindow(QMainWindow):
             self.__add_to_recent_files(filepath)
 
     def __save_as(self):
-        filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.path.join(os.getcwd(), 'untitled.vgf'), 'Visual Graph File(*.vgf)')
+        filepath, filetype = QFileDialog.getSaveFileName(self, '另存为', os.path.join(os.getcwd(), 'untitled.vgf'),
+                                                         'Visual Graph File(*.vgf)')
         if filepath == '':
             # 取消
             return
