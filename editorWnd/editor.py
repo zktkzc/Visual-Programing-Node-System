@@ -152,6 +152,8 @@ class VisualGraphWindow(QMainWindow):
             if filepath == '':
                 # 取消
                 return
+            self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
+            self.record_file_opened(filepath, self.tab_index)
             self.editor.save_graph_as(filepath)
             self.__add_to_recent_files(filepath)
 
