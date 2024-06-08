@@ -90,19 +90,28 @@ class VisualGraphWindow(QMainWindow):
         self.tabs = []
         self.tab_widget = QTabWidget(self)
         self.setCentralWidget(self.tab_widget)
+        self.tab_widget.setTabsClosable(True)
         self.add_a_tab()  # 默认添加一个tab
         self.tab_widget.currentChanged.connect(self.tab_changed)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.tab_index: int = 0
         self.opened_files: Dict[str, int] = {}
 
         self.show()
 
+    def close_tab(self, index: int):
+        self.tab_widget.removeTab(index)
+        self.tabs.pop(index)
+        if self.tab_widget.count() == 0:
+            self.add_a_tab()
+
     def record_file_opened(self, filepath: str, index: int):
         self.opened_files[filepath] = index
 
     def tab_changed(self, index: int):
-        self.tab_index = index
-        self.editor = self.tabs[index]
+        if len(self.tabs) > 0:
+            self.tab_index = index
+            self.editor = self.tabs[index]
 
     def add_a_tab(self, filepath: str = ''):
         tab_view = Editor(self)
