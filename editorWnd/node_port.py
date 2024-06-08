@@ -446,7 +446,7 @@ class Pin:
             self.pin_class = pin_class
             self._pin_color = DTypes.Color_Map[pin_class]
             if use_default_widget:
-                self._pin_widget = DTypes.default_widget[pin_class]
+                self._pin_widget = DTypes.default_widget.get(pin_class, None)
             else:
                 self._pin_widget = pin_widget
         self.port: Union[NodePort, None] = None

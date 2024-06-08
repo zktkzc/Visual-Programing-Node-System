@@ -82,6 +82,10 @@ GLOBAL_STYLESHEET = '''
         padding: 5px;
     }
     
+    QTabBar::tab:hover {
+        background-color: #414141;
+    }
+    
     QTabBar::tab:selected {
         background-color: #151515;
         padding: 5px;

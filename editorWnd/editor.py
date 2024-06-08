@@ -9,9 +9,11 @@ from functools import partial
 from typing import List, Union, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QAction, QKeySequence, QCursor
+from PySide6.QtGui import QAction, QKeySequence, QCursor, QUndoStack, QUndoCommand, QGuiApplication
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
 
+from editorWnd.command import CutCommand
+from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
 from editorWnd.node_port import ParamPort, OutputPort
@@ -84,9 +86,11 @@ class VisualGraphWindow(QMainWindow):
         edit_menu.addSeparator()
         self.undo_action = QAction(text='&撤销', parent=self)
         self.undo_action.setShortcut(QKeySequence('Ctrl+Z'))
+        self.undo_action.triggered.connect(self.__undo)
         edit_menu.addAction(self.undo_action)
         self.redo_action = QAction(text='&重做', parent=self)
         self.redo_action.setShortcut(QKeySequence('Ctrl+Y'))
+        self.redo_action.triggered.connect(self.__redo)
         edit_menu.addAction(self.redo_action)
         edit_menu.addSeparator()
         self.comment_action = QAction(text='&注释', parent=self)
@@ -124,6 +128,12 @@ class VisualGraphWindow(QMainWindow):
         self.show()
 
     # ================  编辑操作  ====================
+    def __undo(self):
+        self.editor.undo_edit()
+
+    def __redo(self):
+        self.editor.redo_edit()
+
     def __cut(self):
         selected_items = self.editor.stringfy_selected_items()
         if selected_items is None:
@@ -131,7 +141,7 @@ class VisualGraphWindow(QMainWindow):
             return
         self.clipboard.clear()
         self.clipboard.setText(json.dumps(selected_items))
-        self.editor.view.delete_selected_items()
+        self.editor.cut_items()
 
     def __copy(self):
         """
@@ -166,8 +176,8 @@ class VisualGraphWindow(QMainWindow):
 
     def __close_tab(self, index: int):
         self.tab_widget.removeTab(index)
-        filepath:str = ''
-        for k,v in self.opened_files.items():
+        filepath: str = ''
+        for k, v in self.opened_files.items():
             if v == index:
                 filepath = k
                 break
@@ -292,16 +302,9 @@ class VisualGraphWindow(QMainWindow):
         self.__record_file_opened(filepath, self.tab_index)
 
     def __center(self):
-        nodes = self.editor.view.get_nodes()
-        if len(nodes) > 0:
-            pos_x = []
-            pos_y = []
-            for node in nodes:
-                pos = node.scenePos()
-                pos_x.append(pos.x())
-                pos_x.append(pos.y())
-            center = (sum(pos_x) / len(pos_x), sum(pos_y) / len(pos_y))
-            self.editor.view.centerOn(QPointF(center[0], center[1]))
+        screen = QGuiApplication.primaryScreen().geometry()
+        size = self.geometry()
+        self.move(int((screen.width() - size.width()) / 2), int((screen.height() - size.height()) / 2))
 
 
 class Editor(QWidget):
@@ -311,9 +314,25 @@ class Editor(QWidget):
         self.view: Union[View, None] = None
         self.layout: Union[QLayout, None] = None
         ENV.init_node_env()
-        self.setup_editor()
+        self.__setup_editor()
+        self.undo_stack = QUndoStack()
 
-    def setup_editor(self):
+    def undo_edit(self):
+        self.undo_stack.undo()
+
+    def redo_edit(self):
+        self.undo_stack.redo()
+
+    def cut_items(self):
+        command = CutCommand(self)
+        self.add_action_to_stack('cut items', command)
+
+    def add_action_to_stack(self, command_text: str, command: QUndoCommand):
+        self.undo_stack.beginMacro(command_text)
+        self.undo_stack.push(command)
+        self.undo_stack.endMacro()
+
+    def __setup_editor(self):
         # 窗口位置以及大小
         self.setGeometry(100, 100, 1200, 700)
         self.setWindowTitle('可视化编程编辑器')
@@ -326,7 +345,7 @@ class Editor(QWidget):
         # self.debug_add_node()
         self.show()
 
-    def debug_add_node(self, pos: tuple[float, float] = (0, 0)):
+    def __debug_add_node(self, pos: tuple[float, float] = (0, 0)):
         param_ports: list[ParamPort] = [
             ParamPort('宽度', 'float', '#99ff22'),
             ParamPort('高度', 'float', '#99ff22'),
@@ -342,10 +361,16 @@ class Editor(QWidget):
         self.view.add_node(node, pos)
 
     def center(self):
-        if len(self.view.get_nodes()) > 0:
-            pos = self.view.get_nodes()[0].scenePos()
-            width, height = self.view.geometry().width(), self.view.geometry().height()
-            self.view.centerOn(QPointF(pos.x() + width / 2 - 100, pos.y() + height / 2 - 100))
+        nodes = self.view.get_nodes()
+        if len(nodes) > 0:
+            pos_x = []
+            pos_y = []
+            for node in nodes:
+                pos = node.scenePos()
+                pos_x.append(pos.x())
+                pos_y.append(pos.y())
+            center = (sum(pos_x) / len(pos_x), sum(pos_y) / len(pos_y))
+            self.view.centerOn(QPointF(center[0], center[1]))
 
     def stringfy_selected_items(self):
         items = self.view.get_selected_items()
@@ -379,6 +404,13 @@ class Editor(QWidget):
         :return:
         """
         self.debug_add_custom_node((mouse_pos.x(), mouse_pos.y()))
+
+    def readd_node(self, node: GraphicNode):
+        pos = node.scenePos()
+        self.view.add_node(node, (pos.x(), pos.y()))
+
+    def readd_edge(self, edge: NodeEdge):
+        self.view.readd_edge(edge)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:

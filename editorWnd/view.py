@@ -465,6 +465,11 @@ class View(QGraphicsView):
         self._edges.append(edge)
         return edge
 
+    def readd_edge(self, edge: NodeEdge):
+        edge.add_to_scene()
+        self._edges.append(edge)
+        self._scene.update()
+
     def remove_edge(self, edge: NodeEdge):
         if edge in self._edges:
             self._edges.remove(edge)

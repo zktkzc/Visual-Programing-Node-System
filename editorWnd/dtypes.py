@@ -28,10 +28,6 @@ class DTypes:
         'bool': QCheckBox,
         'str': QLineEdit,
         'float': QLineEdit,
-        'list': QLineEdit,
-        'dict': QLineEdit,
-        'class': QLineEdit,
-        'vector': QLineEdit
     }
 
 
