@@ -9,10 +9,11 @@ from functools import partial
 from typing import List, Union, Dict, Any
 
 from PySide6.QtCore import QPointF
-from PySide6.QtGui import QAction, QKeySequence, QCursor, QUndoStack, QUndoCommand, QGuiApplication
-from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
+from PySide6.QtGui import QAction, QKeySequence, QUndoStack, QUndoCommand, QGuiApplication, QCursor
+from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication, \
+    QGraphicsItem
 
-from editorWnd.command import CutCommand
+from editorWnd.command import CutCommand, PasteCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
@@ -344,7 +345,6 @@ class Editor(QWidget):
         self.scene = Scene()
         self.view = View(self.scene, self)
         self.layout.addWidget(self.view)
-        # self.debug_add_node()
         self.show()
 
     def center(self):
@@ -365,11 +365,16 @@ class Editor(QWidget):
             return self.view.stringfy_items(items)
         return None
 
+    def select_items(self, items: List[QGraphicsItem]):
+        for item in items:
+            item.setSelected(True)
+
+    def map_mouse_to_scene(self) -> QPointF:
+        return self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos()))
+
     def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]], is_cut: bool):
-        self.view.unselected_selected_items()
-        self.view.itemfy_json_string(data=data,
-                                     mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())),
-                                     is_cut=is_cut)
+        paste_command = PasteCommand(self, data, is_cut)
+        self.add_action_to_stack('paste items', paste_command)
 
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)
