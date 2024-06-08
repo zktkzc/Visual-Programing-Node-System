@@ -9,7 +9,7 @@ from functools import partial
 from typing import List, Union, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QGuiApplication, QAction, QKeySequence, QCursor
+from PySide6.QtGui import QAction, QKeySequence, QCursor
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
 
 from editorWnd.env import ENV
@@ -79,6 +79,7 @@ class VisualGraphWindow(QMainWindow):
         edit_menu.addAction(self.paste_action)
         self.cut_action = QAction(text='&剪切', parent=self)
         self.cut_action.setShortcut(QKeySequence('Ctrl+X'))
+        self.cut_action.triggered.connect(self.__cut)
         edit_menu.addAction(self.cut_action)
         edit_menu.addSeparator()
         self.undo_action = QAction(text='&撤销', parent=self)
@@ -123,6 +124,15 @@ class VisualGraphWindow(QMainWindow):
         self.show()
 
     # ================  编辑操作  ====================
+    def __cut(self):
+        selected_items = self.editor.stringfy_selected_items()
+        if selected_items is None:
+            print('编辑器: 还没有选中任何节点和连接边')
+            return
+        self.clipboard.clear()
+        self.clipboard.setText(json.dumps(selected_items))
+        self.editor.view.delete_selected_items()
+
     def __copy(self):
         """
         复制选中的node和edge
@@ -156,9 +166,19 @@ class VisualGraphWindow(QMainWindow):
 
     def __close_tab(self, index: int):
         self.tab_widget.removeTab(index)
+        filepath:str = ''
+        for k,v in self.opened_files.items():
+            if v == index:
+                filepath = k
+                break
+        self.opened_files.pop(filepath)
         self.tabs.pop(index)
         if self.tab_widget.count() == 0:
             self.__add_a_tab()
+        self.tab_index = self.tab_widget.currentIndex()
+        filepath_lst = list(self.opened_files.keys())
+        for i in range(len(filepath_lst)):
+            self.opened_files[filepath_lst[i]] = i
 
     def __record_file_opened(self, filepath: str, index: int):
         self.opened_files[filepath] = index
@@ -272,9 +292,16 @@ class VisualGraphWindow(QMainWindow):
         self.__record_file_opened(filepath, self.tab_index)
 
     def __center(self):
-        screen = QGuiApplication.primaryScreen().geometry()
-        size = self.geometry()
-        self.move(int((screen.width() - size.width()) / 2), int((screen.height() - size.height()) / 2))
+        nodes = self.editor.view.get_nodes()
+        if len(nodes) > 0:
+            pos_x = []
+            pos_y = []
+            for node in nodes:
+                pos = node.scenePos()
+                pos_x.append(pos.x())
+                pos_x.append(pos.y())
+            center = (sum(pos_x) / len(pos_x), sum(pos_y) / len(pos_y))
+            self.editor.view.centerOn(QPointF(center[0], center[1]))
 
 
 class Editor(QWidget):
@@ -327,7 +354,8 @@ class Editor(QWidget):
         return None
 
     def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]]):
-        self.view.itemfy_json_string(data=data, mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())))
+        self.view.itemfy_json_string(data=data,
+                                     mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())))
 
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)

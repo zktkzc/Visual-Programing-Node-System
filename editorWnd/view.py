@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget, QGraphicsItem
 
+import editorWnd.nodes.ActionNode
 from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode, Node
@@ -61,7 +62,7 @@ class View(QGraphicsView):
         self.__setup_node_list_widget()
         self._pos_show_node_list_widget: Union[QPoint, QPointF] = QPoint(0, 0)
         # 是否有开始运行节点
-        self._has_begin_node: bool = False
+        self.__has_begin_node: bool = False
         self._begin_node: Union[BeginNode, None] = None
         # 当前graph保存的路径
         self._saved_path: str = ''
@@ -191,7 +192,7 @@ class View(QGraphicsView):
 
     def __run_graph(self):
         # 找到开始运行节点，如果没有则提示
-        if not self._has_begin_node:
+        if not self.__has_begin_node:
             print('视图: 需要一个【开始运行】节点来运行')
             return
         self.new_session()
@@ -243,6 +244,7 @@ class View(QGraphicsView):
             node_id = int(node['id'])
             node_id_obj[node_id] = node_obj
             # 设置widget的值
+
             port_value = node['port_values']
             for index, value in port_value.items():
                 port = node_obj.get_input_port(int(index))
@@ -256,6 +258,13 @@ class View(QGraphicsView):
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
             self.add_node_edge(source_port, dest_port)
+
+    def delete_selected_items(self):
+        for item in self.get_selected_items():
+            if isinstance(item, Node):
+                if item.node_title == '开始运行':
+                    self.__has_begin_node = False
+                item.remove_self()
 
     def get_selected_items(self):
         return self._scene.selectedItems()
@@ -434,10 +443,10 @@ class View(QGraphicsView):
         :return:
         """
         if isinstance(node, BeginNode):
-            if self._has_begin_node:
+            if self.__has_begin_node:
                 print('视图: 添加节点失败，【开始运行】节点已经存在了')
                 return
-            self._has_begin_node = True
+            self.__has_begin_node = True
             self._begin_node = node
         node.setPos(pos[0], pos[1])
         node.set_scene(self._scene)
@@ -455,6 +464,6 @@ class View(QGraphicsView):
     def remove_node(self, node: GraphicNode):
         if node in self._nodes:
             if isinstance(node, BeginNode):
-                self._has_begin_node = False
+                self.__has_begin_node = False
                 self._begin_node = None
             self._nodes.remove(node)
