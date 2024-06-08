@@ -14,7 +14,7 @@ GLOBAL_STYLESHEET = '''
         background-color: #1e1f1c;
         spacing: 10px;
         font-size: 16px;
-        color: white;
+        color: #c4c4c4;
     }
     
     QMenuBar::item {
@@ -23,7 +23,8 @@ GLOBAL_STYLESHEET = '''
     }
     
     QMenuBar::item:selected {
-        background-color: #a8a8a8；
+        background-color: #a8a8a8;
+        color: white;
     }
     
     QMenuBar::item:pressed {
@@ -32,7 +33,7 @@ GLOBAL_STYLESHEET = '''
     
     QMenu {
         background-color: #151515;
-        color: white;
+        color: #c4c4c4;
         font-size: 16px;
     }
     
@@ -59,40 +60,39 @@ GLOBAL_STYLESHEET = '''
     
     QMenu::item:selected {
         background-color: #888888;
+        color: white;
     }
     
     QWidget {
         background-color: #151515;
         margin: 0px;
         padding: 0px;
+        border: none;
     }
     
     QTabBar::tab {
-        background-color: #151515;
-        color: #888888;
-        border-top: 1px solid white;
-        border-left: 1px solid white;
-        border-right: 1px solid white;
+        background-color: #313131;
+        color: #c4c4c4;
+        border: none;
         font-size: 14px;
-        width: 100px;
+        min-width: 15ex;
         height: 20px;
         spacing: 10px;
+        padding: 5px;
     }
     
     QTabBar::tab:selected {
-        background-color: #a8a8a8;
-        color: black;
-        border-left: none;
-        border-right: none;
+        background-color: #151515;
+        padding: 5px;
     }
     
     QTabWidget::tab-bar {
-        background-color: #151515;
-        left: 10px;
+        border-bottom: 1px solid #101010;
     }
     
     QTabWidget::pane {
-        border: 1px solid gray;
+        border-top: 7px solid qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #151515, stop: 0.4 #101010,
+        stop: 0.5 #010101, stop: 1 #313131);
     }
 '''
 
