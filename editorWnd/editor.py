@@ -30,15 +30,15 @@ class VisualGraphWindow(QMainWindow):
         menubar = self.menuBar()
         file_menu = menubar.addMenu('文件(&F)')
         self.new_graph_action = QAction(text='&新建画布', parent=self)
-        self.new_graph_action.setShortcuts([QKeySequence('Ctrl+N')])
+        self.new_graph_action.setShortcut(QKeySequence('Ctrl+N'))
         self.new_graph_action.triggered.connect(self.__add_a_tab)
         file_menu.addAction(self.new_graph_action)
         self.new_window_action = QAction(text='&新建窗口', parent=self)
-        self.new_window_action.setShortcuts([QKeySequence('Ctrl+Shift+N')])
+        self.new_window_action.setShortcut(QKeySequence('Ctrl+Shift+N'))
         file_menu.addAction(self.new_window_action)
         file_menu.addSeparator()
         self.open_action = QAction(text='&打开', parent=self)
-        self.open_action.setShortcuts([QKeySequence('Ctrl+O')])
+        self.open_action.setShortcut(QKeySequence('Ctrl+O'))
         self.open_action.triggered.connect(self.__open_with_dialog)
         file_menu.addAction(self.open_action)
         self.recent_menu = file_menu.addMenu('&最近打开')
@@ -50,31 +50,47 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addAction(self.set_workspace_action)
         file_menu.addSeparator()
         self.save_action = QAction(text='&保存', parent=self)
-        self.save_action.setShortcuts([QKeySequence('Ctrl+S')])
+        self.save_action.setShortcut(QKeySequence('Ctrl+S'))
         self.save_action.triggered.connect(self.__save)
         file_menu.addAction(self.save_action)
         self.save_as_action = QAction(text='&另存为', parent=self)
-        self.save_as_action.setShortcuts([QKeySequence('Ctrl+Shift+S')])
+        self.save_as_action.setShortcut(QKeySequence('Ctrl+Shift+S'))
         self.save_as_action.triggered.connect(self.__save_as)
         file_menu.addAction(self.save_as_action)
         self.save_all_action = QAction(text='&全部保存', parent=self)
-        self.save_all_action.setShortcuts([QKeySequence('Ctrl+Alt+S')])
+        self.save_all_action.setShortcut(QKeySequence('Ctrl+Alt+S'))
         self.save_all_action.triggered.connect(self.__save_all)
         file_menu.addAction(self.save_all_action)
         file_menu.addSeparator()
         self.quit_action = QAction(text='&退出', parent=self)
-        self.quit_action.setShortcuts([QKeySequence('Alt+F4')])
+        self.quit_action.setShortcut(QKeySequence('Alt+F4'))
         self.quit_action.triggered.connect(self.__quit)
         file_menu.addAction(self.quit_action)
 
         edit_menu = menubar.addMenu('编辑(&E)')
         self.copy_action = QAction(text='&复制', parent=self)
+        self.copy_action.setShortcut(QKeySequence('Ctrl+C'))
+        edit_menu.addAction(self.copy_action)
         self.paste_action = QAction(text='&粘贴', parent=self)
+        self.paste_action.setShortcut(QKeySequence('Ctrl+V'))
+        edit_menu.addAction(self.paste_action)
         self.cut_action = QAction(text='&剪切', parent=self)
+        self.cut_action.setShortcut(QKeySequence('Ctrl+X'))
+        edit_menu.addAction(self.cut_action)
         edit_menu.addSeparator()
         self.undo_action = QAction(text='&撤销', parent=self)
+        self.undo_action.setShortcut(QKeySequence('Ctrl+Z'))
+        edit_menu.addAction(self.undo_action)
         self.redo_action = QAction(text='&重做', parent=self)
-        edit_menu.addActions([self.copy_action, self.paste_action, self.cut_action, self.undo_action, self.redo_action])
+        self.redo_action.setShortcut(QKeySequence('Ctrl+Y'))
+        edit_menu.addAction(self.redo_action)
+        edit_menu.addSeparator()
+        self.comment_action = QAction(text='&注释', parent=self)
+        self.comment_action.setShortcut(QKeySequence('Ctrl+Alt+C'))
+        edit_menu.addAction(self.comment_action)
+        self.group_action = QAction(text='&创建组', parent=self)
+        self.group_action.setShortcut(QKeySequence('Ctrl+G'))
+        edit_menu.addAction(self.group_action)
 
         selection_menu = menubar.addMenu('选择(&S)')
 
@@ -119,7 +135,7 @@ class VisualGraphWindow(QMainWindow):
 
     def __add_a_tab(self, filepath: str = ''):
         tab_view = Editor(self)
-        if filepath == ''or isinstance(filepath, int):
+        if filepath == '' or isinstance(filepath, int):
             tab_title = f'未命名-{len(self.tabs) + 1}'
         else:
             tab_title = os.path.basename(filepath)
@@ -161,7 +177,7 @@ class VisualGraphWindow(QMainWindow):
 
     def __save_all(self):
         if self.tabs:
-            for index,tab in enumerate(self.tabs):
+            for index, tab in enumerate(self.tabs):
                 self.__save_in_tab(tab, index)
 
     def __save_in_tab(self, tab: Editor, index: int):

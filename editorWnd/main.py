@@ -56,6 +56,7 @@ GLOBAL_STYLESHEET = '''
     
     QMenu::item::disabled::selected {
         background-color: transparent;
+        color: #888888;
     }
     
     QMenu::item:selected {
