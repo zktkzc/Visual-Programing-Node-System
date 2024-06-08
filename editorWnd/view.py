@@ -94,11 +94,9 @@ class View(QGraphicsView):
         proxy.setZValue(2)
         self.node_list_widget.setGeometry(0, 0, 200, 300)
         self.__hide_node_list_widget()
-        self.node_list_widget.itemClicked.connect(self.__node_selected)
+        self.node_list_widget.itemDoubleClicked.connect(self.__node_selected)
 
     def __node_selected(self, item: PySide6.QtWidgets.QTreeWidgetItem, column):
-        if item.childCount() > 0:
-            item.setExpanded(not item.isExpanded())
         if item.data(0, Qt.ItemDataRole.UserRole) is not None:
             node = item.data(0, Qt.ItemDataRole.UserRole)()
             self.add_node(node, (self._pos_show_node_list_widget.x(), self._pos_show_node_list_widget.y()))
