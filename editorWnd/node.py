@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import abc
 import string
-from random import randint
+import uuid
 from typing import TYPE_CHECKING, Union, List, Any, Dict
 
 from PySide6.QtCore import QRectF, Qt
@@ -268,7 +268,7 @@ class Node(GraphicNode):
         self._output_data_ready: bool = False
 
         self._session_id: int = 0
-        self.node_id: int = randint(10000, 10000000)
+        self.node_id: int = uuid.uuid1().int
 
         self.is_validate()
 

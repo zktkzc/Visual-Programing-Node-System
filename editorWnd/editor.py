@@ -3,12 +3,13 @@
 """
 from __future__ import annotations
 
+import json
 import os
 from functools import partial
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
+from PySide6.QtGui import QGuiApplication, QAction, QKeySequence, QCursor
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
 
 from editorWnd.env import ENV
@@ -70,9 +71,11 @@ class VisualGraphWindow(QMainWindow):
         edit_menu = menubar.addMenu('编辑(&E)')
         self.copy_action = QAction(text='&复制', parent=self)
         self.copy_action.setShortcut(QKeySequence('Ctrl+C'))
+        self.copy_action.triggered.connect(self.__copy)
         edit_menu.addAction(self.copy_action)
         self.paste_action = QAction(text='&粘贴', parent=self)
         self.paste_action.setShortcut(QKeySequence('Ctrl+V'))
+        self.paste_action.triggered.connect(self.__paste)
         edit_menu.addAction(self.paste_action)
         self.cut_action = QAction(text='&剪切', parent=self)
         self.cut_action.setShortcut(QKeySequence('Ctrl+X'))
@@ -104,7 +107,7 @@ class VisualGraphWindow(QMainWindow):
         self.recent_files: List[str] = []
 
         # tab栏
-        self.tabs = []
+        self.tabs: List[Editor] = []
         self.tab_widget = QTabWidget(self)
         self.setCentralWidget(self.tab_widget)
         self.tab_widget.setTabsClosable(True)
@@ -114,8 +117,40 @@ class VisualGraphWindow(QMainWindow):
         self.tab_index: int = 0
         self.opened_files: Dict[str, int] = {}
 
+        # 剪切板
+        self.clipboard = QApplication.clipboard()
+
         self.show()
 
+    # ================  编辑操作  ====================
+    def __copy(self):
+        """
+        复制选中的node和edge
+        :return:
+        """
+        selected_items = self.editor.stringfy_selected_items()
+        if selected_items is None:
+            print('编辑器: 还没有选中任何节点和连接边')
+            return
+        # 将选中的node和edge保存为json数据存入到剪切板
+        self.clipboard.clear()
+        self.clipboard.setText(json.dumps(selected_items))
+
+    def __paste(self):
+        """
+        粘贴
+        :return:
+        """
+        try:
+            items = json.loads(self.clipboard.text())
+            if items.get('nodes', None) is not None:
+                self.editor.paste_selected_items(data=items)
+            else:
+                print('编辑器: 剪切板中没有可粘贴的节点和连接边')
+        except ValueError:
+            print('编辑器: 剪切板中没有可粘贴的节点和连接边')
+
+    # ================  文件操作  ====================
     def __quit(self):
         QApplication.quit()
 
@@ -212,6 +247,7 @@ class VisualGraphWindow(QMainWindow):
             # 取消
             return
         self.editor.save_graph_as(filepath)
+        self.__record_file_opened(filepath, self.tab_index)
         self.__add_to_recent_files(filepath)
 
     def __open_with_dialog(self):
@@ -283,6 +319,15 @@ class Editor(QWidget):
             pos = self.view.get_nodes()[0].scenePos()
             width, height = self.view.geometry().width(), self.view.geometry().height()
             self.view.centerOn(QPointF(pos.x() + width / 2 - 100, pos.y() + height / 2 - 100))
+
+    def stringfy_selected_items(self):
+        items = self.view.get_selected_items()
+        if len(items) > 0:
+            return self.view.stringfy_items(items)
+        return None
+
+    def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]]):
+        self.view.itemfy_json_string(data=data, mouse_position=self.view.mapToScene(QCursor.pos()))
 
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)

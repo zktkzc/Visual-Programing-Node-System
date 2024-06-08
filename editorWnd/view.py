@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Union, List, Tuple, Dict, Any, Type
 import PySide6.QtWidgets
 from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent
-from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget
+from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget, QGraphicsItem
 
 from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
@@ -169,7 +169,7 @@ class View(QGraphicsView):
             node_obj.set_node_id(node_id)
             # 设置widget的值
             port_value = node['port_values']
-            for index,value in port_value.items():
+            for index, value in port_value.items():
                 port = node_obj.get_input_port(int(index))
                 port.set_widget_value(value)
 
@@ -183,7 +183,8 @@ class View(QGraphicsView):
 
         print('视图: 数据加载成功 ->', filepath)
 
-    def __add_node_with_cls(self, cls: Type[Union[GraphicNode, Node]], pos: Tuple[float, float]) -> Union[GraphicNode, Node]:
+    def __add_node_with_cls(self, cls: Type[Union[GraphicNode, Node]], pos: Tuple[float, float]) -> Union[
+        GraphicNode, Node]:
         node = cls()
         self.add_node(node, pos)
         return node
@@ -203,9 +204,63 @@ class View(QGraphicsView):
         for node in self._nodes:
             node.new_session(self._session_id)
 
+    def stringfy_items(self, items: List[QGraphicsItem]) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        将选中的节点和边转换为json字符串
+        :return:
+        """
+        data = {
+            'edges': [],
+            'nodes': [],
+            'base_point': None
+        }
+        for item in items:
+            if isinstance(item, Node):
+                data['nodes'].append(item.to_string())
+                pos = item.scenePos()
+                base_point = data['base_point']
+                if base_point is None:
+                    data['base_point'] = [pos.x(), pos.y()]
+                else:
+                    if pos.x() < base_point[0]:
+                        data['base_point'] = [pos.x(), pos.y()]
+            if isinstance(item, NodeEdge):
+                data['edges'].append(item.to_string())
+        return data
+
+    def itemfy_json_string(self, data: Dict[str, List[Dict[str, Any]]],
+                           mouse_position: Union[QPoint, QPointF] = QPointF(0, 0)):
+        nodes = data['nodes']
+        edges = data['edges']
+        base_point = QPointF(data['base_point'][0], data['base_point'][1])
+        distance = QPointF(mouse_position.x() - base_point.x(), mouse_position.y() - base_point.y())
+        node_id_obj: Dict[int, Union[GraphicNode, Node]] = {}
+        for node in nodes:
+            # 获取节点类
+            cls = ENV.get_cls_by_name(node['class'])
+            # 创建节点并添加节点对象
+            node_obj = self.__add_node_with_cls(cls, (node['pos'][0] + distance.x(), node['pos'][1] + distance.y()))
+            node_id = int(node['id'])
+            node_id_obj[node_id] = node_obj
+            # 设置widget的值
+            port_value = node['port_values']
+            for index, value in port_value.items():
+                port = node_obj.get_input_port(int(index))
+                port.set_widget_value(value)
+
+        for edge in edges:
+            source_node = node_id_obj[edge['source_node_id']]
+            dest_node = node_id_obj[edge['dest_node_id']]
+            source_port = source_node.get_output_port(edge['source_port_index'])
+            dest_port = dest_node.get_input_port(edge['dest_port_index'])
+            self.add_node_edge(source_port, dest_port)
+
+    def get_selected_items(self):
+        return self._scene.selectedItems()
+
     def __delete_selected_items(self):
         # 获得当前选中的items
-        selected_items = self._scene.selectedItems()
+        selected_items = self.get_selected_items()
         for item in selected_items:
             if isinstance(item, GraphicNode):
                 item.remove_self()
