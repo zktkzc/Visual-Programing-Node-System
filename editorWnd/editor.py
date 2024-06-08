@@ -8,7 +8,7 @@ import os
 from functools import partial
 from typing import List, Union, Dict, Any
 
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import QPointF
 from PySide6.QtGui import QAction, QKeySequence, QCursor, QUndoStack, QUndoCommand, QGuiApplication
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
 
@@ -16,7 +16,6 @@ from editorWnd.command import CutCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
-from editorWnd.node_port import ParamPort, OutputPort
 from editorWnd.scene import Scene
 from editorWnd.view import View
 
@@ -124,6 +123,7 @@ class VisualGraphWindow(QMainWindow):
 
         # 剪切板
         self.clipboard = QApplication.clipboard()
+        self._is_cut: bool = False
 
         self.show()
 
@@ -135,6 +135,7 @@ class VisualGraphWindow(QMainWindow):
         self.editor.redo_edit()
 
     def __cut(self):
+        self._is_cut = True
         selected_items = self.editor.stringfy_selected_items()
         if selected_items is None:
             print('编辑器: 还没有选中任何节点和连接边')
@@ -148,6 +149,7 @@ class VisualGraphWindow(QMainWindow):
         复制选中的node和edge
         :return:
         """
+        self._is_cut = False
         selected_items = self.editor.stringfy_selected_items()
         if selected_items is None:
             print('编辑器: 还没有选中任何节点和连接边')
@@ -164,7 +166,7 @@ class VisualGraphWindow(QMainWindow):
         try:
             items = json.loads(self.clipboard.text())
             if items.get('nodes', None) is not None:
-                self.editor.paste_selected_items(data=items)
+                self.editor.paste_selected_items(data=items, is_cut=self._is_cut)
             else:
                 print('编辑器: 剪切板中没有可粘贴的节点和连接边')
         except ValueError:
@@ -345,21 +347,6 @@ class Editor(QWidget):
         # self.debug_add_node()
         self.show()
 
-    def __debug_add_node(self, pos: tuple[float, float] = (0, 0)):
-        param_ports: list[ParamPort] = [
-            ParamPort('宽度', 'float', '#99ff22'),
-            ParamPort('高度', 'float', '#99ff22'),
-            ParamPort('计数', 'int', '#00ffee')
-        ]
-
-        output_params: list[OutputPort] = [
-            OutputPort('面积', 'float', '#99ff22'),
-            OutputPort('数量', 'int', '#00ffee')
-        ]
-
-        node = GraphicNode(title='面积', param_ports=param_ports, output_ports=output_params, is_pure=False)
-        self.view.add_node(node, pos)
-
     def center(self):
         nodes = self.view.get_nodes()
         if len(nodes) > 0:
@@ -378,10 +365,11 @@ class Editor(QWidget):
             return self.view.stringfy_items(items)
         return None
 
-    def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]]):
+    def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]], is_cut: bool):
         self.view.unselected_selected_items()
         self.view.itemfy_json_string(data=data,
-                                     mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())))
+                                     mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())),
+                                     is_cut=is_cut)
 
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)
@@ -393,28 +381,9 @@ class Editor(QWidget):
     def save_graph_as(self, filepath: str):
         self.view.save_graph(filepath)
 
-    def debug_add_custom_node(self, pos: tuple[float, float] = (0, 0)):
-        node = ENV.get_registered_node_cls()[1]()
-        self.view.add_node(node, pos)
-
-    def right_click_add_node(self, mouse_pos):
-        """
-        右键添加节点
-        :param mouse_pos: 鼠标点击的位置
-        :return:
-        """
-        self.debug_add_custom_node((mouse_pos.x(), mouse_pos.y()))
-
     def readd_node(self, node: GraphicNode):
         pos = node.scenePos()
         self.view.add_node(node, (pos.x(), pos.y()))
 
     def readd_edge(self, edge: NodeEdge):
         self.view.readd_edge(edge)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.RightButton:
-            # self.right_click_add_node(self.view.mapToScene(event.pos()))  # 将鼠标位置从屏幕映射到scene中的位置
-            pass
-        else:
-            super().mousePressEvent(event)

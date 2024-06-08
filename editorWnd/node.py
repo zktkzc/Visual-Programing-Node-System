@@ -85,10 +85,10 @@ class GraphicNode(QGraphicsItem):
         self.__init_output_ports()
 
     def remove_self(self):
-        '''
+        """
         删除自己
         :return:
-        '''
+        """
         # 删除连接边
         for edge in self.edges.copy():
             edge.remove_self()
@@ -98,12 +98,12 @@ class GraphicNode(QGraphicsItem):
         self.update()
 
     def add_connected_node(self, node: GraphicNode, edge: NodeEdge):
-        '''
+        """
         添加连接的节点
         :param node:
         :param edge:
         :return:
-        '''
+        """
         self._connected_nodes.append(node)
         self.edges.append(edge)
 

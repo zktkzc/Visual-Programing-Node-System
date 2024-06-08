@@ -227,7 +227,7 @@ class View(QGraphicsView):
         return data
 
     def itemfy_json_string(self, data: Dict[str, List[Dict[str, Any]]],
-                           mouse_position: Union[QPoint, QPointF] = QPointF(0, 0)):
+                           mouse_position: Union[QPoint, QPointF] = QPointF(0, 0), is_cut: bool = False):
         nodes = data['nodes']
         edges = data['edges']
         base_point = QPointF(data['base_point'][0], data['base_point'][1])
@@ -242,7 +242,6 @@ class View(QGraphicsView):
             node_id = int(node['id'])
             node_id_obj[node_id] = node_obj
             # 设置widget的值
-
             port_value = node['port_values']
             for index, value in port_value.items():
                 port = node_obj.get_input_port(int(index))
@@ -251,7 +250,9 @@ class View(QGraphicsView):
         for edge in edges:
             source_node = node_id_obj.get(edge['source_node_id'], None)
             dest_node = node_id_obj.get(edge['dest_node_id'], None)
-            if source_node is None or dest_node is None or source_node.node_title == '开始运行':
+            if source_node is None or dest_node is None:
+                continue
+            if source_node.node_title == '开始运行' and not is_cut:
                 continue
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
