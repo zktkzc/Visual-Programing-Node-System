@@ -13,7 +13,7 @@ from PySide6.QtGui import QAction, QKeySequence, QUndoStack, QUndoCommand, QGuiA
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication, \
     QGraphicsItem
 
-from editorWnd.command import CutCommand, PasteCommand
+from editorWnd.command import CutCommand, PasteCommand, DelCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
@@ -93,6 +93,11 @@ class VisualGraphWindow(QMainWindow):
         self.redo_action.triggered.connect(self.__redo)
         edit_menu.addAction(self.redo_action)
         edit_menu.addSeparator()
+        self.delete_item_action = QAction(text='&删除选中项', parent=self)
+        self.delete_item_action.setShortcuts([QKeySequence('X'), QKeySequence('Delete')])
+        self.delete_item_action.triggered.connect(self.__del_selected_items)
+        edit_menu.addAction(self.delete_item_action)
+        edit_menu.addSeparator()
         self.comment_action = QAction(text='&注释', parent=self)
         self.comment_action.setShortcut(QKeySequence('Ctrl+Alt+C'))
         edit_menu.addAction(self.comment_action)
@@ -129,6 +134,9 @@ class VisualGraphWindow(QMainWindow):
         self.show()
 
     # ================  编辑操作  ====================
+    def __del_selected_items(self):
+        self.editor.del_items()
+
     def __undo(self):
         self.editor.undo_edit()
 
@@ -184,7 +192,8 @@ class VisualGraphWindow(QMainWindow):
             if v == index:
                 filepath = k
                 break
-        self.opened_files.pop(filepath)
+        if filepath != '':
+            self.opened_files.pop(filepath)
         self.tabs.pop(index)
         if self.tab_widget.count() == 0:
             self.__add_a_tab()
@@ -329,6 +338,10 @@ class Editor(QWidget):
     def cut_items(self):
         command = CutCommand(self)
         self.add_action_to_stack('cut items', command)
+
+    def del_items(self):
+        command = DelCommand(self)
+        self.add_action_to_stack('del items', command)
 
     def add_action_to_stack(self, command_text: str, command: QUndoCommand):
         self.undo_stack.beginMacro(command_text)

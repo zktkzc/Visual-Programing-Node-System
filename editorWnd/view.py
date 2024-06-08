@@ -112,14 +112,8 @@ class View(QGraphicsView):
         self.node_list_widget.setVisible(False)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Delete or event.key() == Qt.Key.Key_X:
-            self.__delete_selected_items()
-        elif event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
+        if event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             self.__run_graph()
-        elif event.key() == Qt.Key.Key_S and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.save_graph()
-        elif event.key() == Qt.Key.Key_F and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.load_graph()
         super().keyPressEvent(event)
 
     def save_graph(self, filepath: str = 'graph.json'):

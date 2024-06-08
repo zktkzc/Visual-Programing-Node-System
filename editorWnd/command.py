@@ -55,3 +55,27 @@ class PasteCommand(QUndoCommand):
         self.editor.select_items(self.selected_items)
         for item in self.items.copy():
             item.remove_self()
+
+
+class DelCommand(QUndoCommand):
+    def __init__(self, editor: Editor):
+        super().__init__()
+        self.editor: Editor = editor
+        self.items = self.editor.view.get_selected_items()
+
+    def undo(self):
+        for item in self.items:
+            if isinstance(item, Node):
+                self.editor.readd_node(item)
+            elif isinstance(item, NodeEdge):
+                self.editor.readd_edge(edge=item)
+
+    def redo(self):
+        for item in self.items:
+            if isinstance(item, Node):
+                for edge in item.edges:
+                    if edge not in self.items:
+                        self.items.append(edge)
+                item.remove_self()
+            elif isinstance(item, NodeEdge):
+                item.remove_self()
