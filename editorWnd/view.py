@@ -11,7 +11,6 @@ from PySide6.QtCore import Qt, QEvent, QPoint, QPointF
 from PySide6.QtGui import QPainter, QMouseEvent
 from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget, QGraphicsItem
 
-import editorWnd.nodes.ActionNode
 from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode, Node
@@ -241,6 +240,7 @@ class View(QGraphicsView):
             cls = ENV.get_cls_by_name(node['class'])
             # 创建节点并添加节点对象
             node_obj = self.__add_node_with_cls(cls, (node['pos'][0] + distance.x(), node['pos'][1] + distance.y()))
+            node_obj.setSelected(True)
             node_id = int(node['id'])
             node_id_obj[node_id] = node_obj
             # 设置widget的值
@@ -257,7 +257,14 @@ class View(QGraphicsView):
                 continue
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
-            self.add_node_edge(source_port, dest_port)
+            edge = self.add_node_edge(source_port, dest_port)
+            edge.setSelected(True)
+
+    def unselected_selected_items(self):
+        selected_items = self.get_selected_items()
+        if len(selected_items) > 0:
+            for item in selected_items:
+                item.setSelected(False)
 
     def delete_selected_items(self):
         for item in self.get_selected_items():
@@ -453,9 +460,10 @@ class View(QGraphicsView):
         self._scene.addItem(node)
         self._nodes.append(node)
 
-    def add_node_edge(self, src_port: NodePort = None, dest_port: NodePort = None):
+    def add_node_edge(self, src_port: NodePort = None, dest_port: NodePort = None) -> NodeEdge:
         edge = NodeEdge(self._scene, src_port, dest_port)
         self._edges.append(edge)
+        return edge
 
     def remove_edge(self, edge: NodeEdge):
         if edge in self._edges:

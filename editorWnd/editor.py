@@ -354,6 +354,7 @@ class Editor(QWidget):
         return None
 
     def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]]):
+        self.view.unselected_selected_items()
         self.view.itemfy_json_string(data=data,
                                      mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())))
 
