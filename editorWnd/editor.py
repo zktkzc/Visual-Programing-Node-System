@@ -160,10 +160,11 @@ class VisualGraphWindow(QMainWindow):
         self.recent_files.insert(0, filepath)
 
     def __save_all(self):
-        for tab in self.tabs:
-            self.__save_in_tab(tab)
+        if self.tabs:
+            for index,tab in enumerate(self.tabs):
+                self.__save_in_tab(tab, index)
 
-    def __save_in_tab(self, tab: Editor):
+    def __save_in_tab(self, tab: Editor, index: int):
         if not tab.save_graph():
             filepath, filetype = QFileDialog.getSaveFileName(self, '保存',
                                                              os.path.join(os.getcwd(), 'untitled.vgf'),
@@ -171,8 +172,8 @@ class VisualGraphWindow(QMainWindow):
             if filepath == '':
                 # 取消
                 return
-            self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
-            self.__record_file_opened(filepath, self.tab_index)
+            self.tab_widget.setTabText(index, os.path.basename(filepath))
+            self.__record_file_opened(filepath, index)
             tab.save_graph_as(filepath)
             self.__add_to_recent_files(filepath)
 
