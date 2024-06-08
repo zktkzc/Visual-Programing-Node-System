@@ -17,6 +17,7 @@ from editorWnd.node import GraphicNode, Node
 from editorWnd.node_port import NodePort
 from editorWnd.nodes.ActionNode import BeginNode
 from editorWnd.widgets import NodeListWidget
+from editorWnd.group import NodeGroup
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
@@ -474,3 +475,12 @@ class View(QGraphicsView):
                 self.__has_begin_node = False
                 self._begin_node = None
             self._nodes.remove(node)
+
+    # ==================================================  组操作  =======================================================
+    def add_node_group(self):
+        """
+        添加一个新的节点组
+        :return:
+        """
+        group = NodeGroup(scene=self._scene)
+        group.setPos(0, 0)

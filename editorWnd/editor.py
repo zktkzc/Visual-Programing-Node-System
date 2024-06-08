@@ -137,11 +137,11 @@ class VisualGraphWindow(QMainWindow):
 
         self.show()
 
-    # ================  运行操作  ====================
+    # =================================================  运行操作  ======================================================
     def __run(self):
         self.editor.view.run_graph()
-
-    # ================  编辑操作  ====================
+    # ==================================================================================================================
+    # ==================================================  编辑操作  ======================================================
     def __del_selected_items(self):
         self.editor.del_items()
 
@@ -188,8 +188,8 @@ class VisualGraphWindow(QMainWindow):
                 print('编辑器: 剪切板中没有可粘贴的节点和连接边')
         except ValueError:
             print('编辑器: 剪切板中没有可粘贴的节点和连接边')
-
-    # ================  文件操作  ====================
+    # ==================================================================================================================
+    # ===============================================  文件操作  =========================================================
     def __quit(self):
         QApplication.quit()
 
@@ -320,6 +320,7 @@ class VisualGraphWindow(QMainWindow):
         self._last_open_path = os.path.dirname(filepath)
         self.__add_to_recent_files(filepath)
         self.__record_file_opened(filepath, self.tab_index)
+    # ==================================================================================================================
 
     def __center(self):
         screen = QGuiApplication.primaryScreen().geometry()
@@ -336,6 +337,7 @@ class Editor(QWidget):
         ENV.init_node_env()
         self.__setup_editor()
         self.undo_stack = QUndoStack()
+        self.view.add_node_group()
 
     def undo_edit(self):
         self.undo_stack.undo()

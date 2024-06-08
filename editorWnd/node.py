@@ -36,7 +36,7 @@ class GraphicNode(QGraphicsItem):
         self._min_node_height: float = 40
         self._node_width: float = self._min_node_width
         self._node_height: float = self._min_node_height
-        self._node_radius: float = 5
+        self._node_radius: float = NodeConfig.NODE_RADIUS
         # 左右两个端口之间的间距
         self._port_space: float = 50
         # node的边框

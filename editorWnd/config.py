@@ -25,6 +25,7 @@ class EditorConfig:
 
 class NodeConfig:
     PORT_ICON_SIZE = 20
+    NODE_RADIUS = 1
     node_title_background_color = {
         '默认行为': '#f5232e',
         '基本运算': '#88df00',
@@ -32,3 +33,12 @@ class NodeConfig:
         '控制结构': '#4e90fe',
         '输入节点': '#00bfff',
     }
+
+
+class GroupConfig:
+    GROUP_TITLE_BACKGROUND_COLOR = '#213252'
+    GROUP_TITLE_COLOR = '#aaaaaa'
+    GROUP_CONTENT_BACKGROUND_COLOR = '#888888'
+    GROUP_TITLE_FONT_SIZE = 14
+    GROUP_TITLE_FONT = 'Microsoft YaHei'
+    GROUP_RADIUS = 1
