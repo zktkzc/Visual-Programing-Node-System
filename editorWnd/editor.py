@@ -327,7 +327,7 @@ class Editor(QWidget):
         return None
 
     def paste_selected_items(self, data: Dict[str, List[Dict[str, Any]]]):
-        self.view.itemfy_json_string(data=data, mouse_position=self.view.mapToScene(QCursor.pos()))
+        self.view.itemfy_json_string(data=data, mouse_position=self.view.mapToScene(self.view.mapFromGlobal(QCursor.pos())))
 
     def open_graph(self, filepath: str):
         self.view.load_graph(filepath)

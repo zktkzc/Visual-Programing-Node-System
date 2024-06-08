@@ -249,8 +249,10 @@ class View(QGraphicsView):
                 port.set_widget_value(value)
 
         for edge in edges:
-            source_node = node_id_obj[edge['source_node_id']]
-            dest_node = node_id_obj[edge['dest_node_id']]
+            source_node = node_id_obj.get(edge['source_node_id'], None)
+            dest_node = node_id_obj.get(edge['dest_node_id'], None)
+            if source_node is None or dest_node is None or source_node.node_title == '开始运行':
+                continue
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
             self.add_node_edge(source_port, dest_port)
