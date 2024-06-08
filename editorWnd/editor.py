@@ -108,6 +108,10 @@ class VisualGraphWindow(QMainWindow):
         selection_menu = menubar.addMenu('选择(&S)')
 
         run_menu = menubar.addMenu('运行(&R)')
+        self.run_action = QAction(text='&运行', parent=self)
+        self.run_action.setShortcuts([QKeySequence('F5'), QKeySequence('Ctrl+R')])
+        self.run_action.triggered.connect(self.__run)
+        run_menu.addAction(self.run_action)
 
         help_menu = menubar.addMenu('帮助(&H)')
 
@@ -132,6 +136,10 @@ class VisualGraphWindow(QMainWindow):
         self._is_cut: bool = False
 
         self.show()
+
+    # ================  运行操作  ====================
+    def __run(self):
+        self.editor.view.run_graph()
 
     # ================  编辑操作  ====================
     def __del_selected_items(self):

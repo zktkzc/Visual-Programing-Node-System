@@ -111,11 +111,6 @@ class View(QGraphicsView):
     def __hide_node_list_widget(self):
         self.node_list_widget.setVisible(False)
 
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_R and event.modifiers() == Qt.KeyboardModifier.ControlModifier:
-            self.__run_graph()
-        super().keyPressEvent(event)
-
     def save_graph(self, filepath: str = 'graph.json'):
         data: Dict[str, Any] = {'graph_name': '', 'time': '', 'nodes': [], 'edges': []}
         # node
@@ -181,7 +176,7 @@ class View(QGraphicsView):
         self.add_node(node, pos)
         return node
 
-    def __run_graph(self):
+    def run_graph(self):
         # 找到开始运行节点，如果没有则提示
         if not self.__has_begin_node:
             print('视图: 需要一个【开始运行】节点来运行')
