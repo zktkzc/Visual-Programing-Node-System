@@ -9,7 +9,7 @@ from typing import List, Union, Dict
 
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QGuiApplication, QAction, QKeySequence
-from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout
+from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication
 
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode
@@ -31,7 +31,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu = menubar.addMenu('文件(&F)')
         self.new_graph_action = QAction(text='&新建画布', parent=self)
         self.new_graph_action.setShortcuts([QKeySequence('Ctrl+N')])
-        self.new_graph_action.triggered.connect(self.add_a_tab)
+        self.new_graph_action.triggered.connect(self.__add_a_tab)
         file_menu.addAction(self.new_graph_action)
         self.new_window_action = QAction(text='&新建窗口', parent=self)
         self.new_window_action.setShortcuts([QKeySequence('Ctrl+Shift+N')])
@@ -64,6 +64,7 @@ class VisualGraphWindow(QMainWindow):
         file_menu.addSeparator()
         self.quit_action = QAction(text='&退出', parent=self)
         self.quit_action.setShortcuts([QKeySequence('Alt+F4')])
+        self.quit_action.triggered.connect(self.__quit)
         file_menu.addAction(self.quit_action)
 
         edit_menu = menubar.addMenu('编辑(&E)')
@@ -91,29 +92,32 @@ class VisualGraphWindow(QMainWindow):
         self.tab_widget = QTabWidget(self)
         self.setCentralWidget(self.tab_widget)
         self.tab_widget.setTabsClosable(True)
-        self.add_a_tab()  # 默认添加一个tab
-        self.tab_widget.currentChanged.connect(self.tab_changed)
-        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        self.__add_a_tab()  # 默认添加一个tab
+        self.tab_widget.currentChanged.connect(self.__tab_changed)
+        self.tab_widget.tabCloseRequested.connect(self.__close_tab)
         self.tab_index: int = 0
         self.opened_files: Dict[str, int] = {}
 
         self.show()
 
-    def close_tab(self, index: int):
+    def __quit(self):
+        QApplication.quit()
+
+    def __close_tab(self, index: int):
         self.tab_widget.removeTab(index)
         self.tabs.pop(index)
         if self.tab_widget.count() == 0:
-            self.add_a_tab()
+            self.__add_a_tab()
 
-    def record_file_opened(self, filepath: str, index: int):
+    def __record_file_opened(self, filepath: str, index: int):
         self.opened_files[filepath] = index
 
-    def tab_changed(self, index: int):
+    def __tab_changed(self, index: int):
         if len(self.tabs) > 0:
             self.tab_index = index
             self.editor = self.tabs[index]
 
-    def add_a_tab(self, filepath: str = ''):
+    def __add_a_tab(self, filepath: str = ''):
         tab_view = Editor(self)
         if filepath == ''or isinstance(filepath, int):
             tab_title = f'未命名-{len(self.tabs) + 1}'
@@ -121,9 +125,9 @@ class VisualGraphWindow(QMainWindow):
             tab_title = os.path.basename(filepath)
         self.tab_widget.addTab(tab_view, tab_title)
         self.tabs.append(tab_view)
-        self.set_current_editor(tab_view, self.tab_widget.count() - 1)
+        self.__set_current_editor(tab_view, self.tab_widget.count() - 1)
 
-    def set_current_editor(self, editor: Editor = None, index: int = 0):
+    def __set_current_editor(self, editor: Editor = None, index: int = 0):
         self.editor = editor
         self.tab_widget.setCurrentWidget(self.tabs[index])
 
@@ -168,7 +172,7 @@ class VisualGraphWindow(QMainWindow):
                 # 取消
                 return
             self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
-            self.record_file_opened(filepath, self.tab_index)
+            self.__record_file_opened(filepath, self.tab_index)
             tab.save_graph_as(filepath)
             self.__add_to_recent_files(filepath)
 
@@ -180,7 +184,7 @@ class VisualGraphWindow(QMainWindow):
                 # 取消
                 return
             self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
-            self.record_file_opened(filepath, self.tab_index)
+            self.__record_file_opened(filepath, self.tab_index)
             self.editor.save_graph_as(filepath)
             self.__add_to_recent_files(filepath)
 
@@ -206,13 +210,13 @@ class VisualGraphWindow(QMainWindow):
             return
         if self.editor.view.get_saved_path() != '':
             # 创建一个新的tab
-            self.add_a_tab(filepath=filepath)
+            self.__add_a_tab(filepath=filepath)
         else:
             self.tab_widget.setTabText(self.tab_index, os.path.basename(filepath))
         self.editor.open_graph(filepath)
         self._last_open_path = os.path.dirname(filepath)
         self.__add_to_recent_files(filepath)
-        self.record_file_opened(filepath, self.tab_index)
+        self.__record_file_opened(filepath, self.tab_index)
 
     def __center(self):
         screen = QGuiApplication.primaryScreen().geometry()
