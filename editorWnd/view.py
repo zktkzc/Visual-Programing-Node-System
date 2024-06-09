@@ -489,8 +489,17 @@ class View(QGraphicsView):
         self._groups.append(group)
         return group
 
+    def readd_group(self, group: NodeGroup):
+        if group not in self._groups:
+            self._groups.append(group)
+            self._scene.addItem(group)
+            self._scene.update()
+
     def delete_node_group(self, group: NodeGroup):
         group.remove_self()
-        if len(self._groups) > 0:
+        self.delete_group_from_groups(group)
+
+    def delete_group_from_groups(self, group: NodeGroup):
+        if len(self._groups) > 0 and group in self._groups:
             self._groups.remove(group)
     # ==================================================================================================================

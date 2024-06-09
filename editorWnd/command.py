@@ -7,10 +7,10 @@ from PySide6.QtWidgets import QGraphicsItem
 
 from editorWnd.edge import NodeEdge
 from editorWnd.node import Node, GraphicNode
+from editorWnd.group import NodeGroup
 
 if TYPE_CHECKING:
     from editorWnd.editor import Editor
-    from editorWnd.group import NodeGroup
 
 
 class CutCommand(QUndoCommand):
@@ -70,16 +70,21 @@ class DelCommand(QUndoCommand):
                 self.editor.readd_node(item)
             elif isinstance(item, NodeEdge):
                 self.editor.readd_edge(edge=item)
+            elif isinstance(item, NodeGroup):
+                self.editor.readd_group(item)
 
     def redo(self):
-        for item in self.items:
-            if isinstance(item, Node):
-                for edge in item.edges:
-                    if edge not in self.items:
-                        self.items.append(edge)
-                item.remove_self()
-            elif isinstance(item, NodeEdge):
-                item.remove_self()
+        if len(self.items) > 0:
+            for item in self.items:
+                if isinstance(item, Node):
+                    for edge in item.edges:
+                        if edge not in self.items:
+                            self.items.append(edge)
+                    item.remove_self()
+                elif isinstance(item, NodeEdge):
+                    item.remove_self()
+                elif isinstance(item, NodeGroup):
+                    item.remove_self()
 
 
 class GroupCommand(QUndoCommand):

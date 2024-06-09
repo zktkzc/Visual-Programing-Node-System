@@ -109,3 +109,7 @@ class NodeGroup(QGraphicsItem):
 
     def remove_self(self):
         self._scene.removeItem(self)
+        self._scene.get_view().delete_group_from_groups(self)
+        self._scene.update()
+        self._scene.get_view().update()
+        self.update()

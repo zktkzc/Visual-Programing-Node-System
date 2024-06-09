@@ -16,7 +16,8 @@ from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTa
 from editorWnd.command import CutCommand, PasteCommand, DelCommand, GroupCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
-from editorWnd.node import GraphicNode, Node
+from editorWnd.group import NodeGroup
+from editorWnd.node import GraphicNode
 from editorWnd.scene import Scene
 from editorWnd.view import View
 
@@ -423,6 +424,10 @@ class Editor(QWidget):
 
     def readd_edge(self, edge: NodeEdge):
         self.view.readd_edge(edge)
+
+    def readd_group(self, group: NodeGroup):
+        self.view.readd_group(group)
+
 
     def group_items(self):
         """
