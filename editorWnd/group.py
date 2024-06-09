@@ -146,6 +146,7 @@ class NodeGroup(QGraphicsItem):
     def remove_self(self):
         self._scene.removeItem(self)
         self._scene.get_view().delete_group_from_groups(self)
+        self.ungroup()
         self._scene.update()
         self._scene.get_view().update()
         self.update()
@@ -168,3 +169,22 @@ class NodeGroup(QGraphicsItem):
     def remove_edge(self, edge: NodeEdge):
         if edge in self._items:
             self._items.remove(edge)
+
+    def ungroup(self):
+        for item in self._items.copy():
+            if isinstance(item, GraphicNode):
+                item.remove_from_group()
+            elif isinstance(item, NodeEdge):
+                item.remove_from_group()
+
+    def get_items(self) -> List[QGraphicsItem]:
+        return self._items
+
+    def add_items(self, items: List[QGraphicsItem]):
+        for item in items:
+            if item not in self._items:
+                if isinstance(item, Node):
+                    item.add_to_group(self)
+                elif isinstance(item, NodeEdge):
+                    item.add_to_group(self)
+                self._items.append(item)

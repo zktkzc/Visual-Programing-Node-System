@@ -13,7 +13,7 @@ from PySide6.QtGui import QAction, QKeySequence, QUndoStack, QUndoCommand, QGuiA
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication, \
     QGraphicsItem, QMessageBox
 
-from editorWnd.command import CutCommand, PasteCommand, DelCommand, GroupCommand
+from editorWnd.command import CutCommand, PasteCommand, DelCommand, GroupCommand, UngroupCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.group import NodeGroup
@@ -90,7 +90,7 @@ class VisualGraphWindow(QMainWindow):
         self.undo_action.triggered.connect(self.__undo)
         edit_menu.addAction(self.undo_action)
         self.redo_action = QAction(text='&重做', parent=self)
-        self.redo_action.setShortcut(QKeySequence('Ctrl+Y'))
+        self.redo_action.setShortcut(QKeySequence('Ctrl+Shift+Z'))
         self.redo_action.triggered.connect(self.__redo)
         edit_menu.addAction(self.redo_action)
         edit_menu.addSeparator()
@@ -179,7 +179,7 @@ class VisualGraphWindow(QMainWindow):
         self.editor.group_items()
 
     def __ungroup(self):
-        pass
+        self.editor.ungroup_items()
 
     def __del_selected_items(self):
         self.editor.del_items()
@@ -468,3 +468,7 @@ class Editor(QWidget):
         """
         command = GroupCommand(self)
         self.add_action_to_stack('group items', command)
+
+    def ungroup_items(self):
+        command = UngroupCommand(self)
+        self.add_action_to_stack('ungroup items', command)

@@ -118,3 +118,23 @@ class GroupCommand(QUndoCommand):
 
     def undo(self):
         self._editor.view.delete_node_group(self._group)
+
+
+class UngroupCommand(QUndoCommand):
+    def __init__(self, editor: Editor):
+        super().__init__()
+        self._editor = editor
+        self._groups: List[NodeGroup] = []
+
+    def undo(self):
+        if len(self._groups) > 0:
+            for group in self._groups:
+                self._editor.view.readd_group(group)
+
+    def redo(self):
+        selected_items = self._editor.view.get_selected_items()
+        for item in selected_items:
+            if isinstance(item, NodeGroup):
+                self._groups.append(item)
+                self._editor.view.delete_node_group(item)
+

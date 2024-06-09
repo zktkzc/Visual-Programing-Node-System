@@ -508,9 +508,12 @@ class View(QGraphicsView):
 
     def readd_group(self, group: NodeGroup):
         if group not in self._groups:
+            items = self.get_selected_items()
+            group.add_items(items)
             self._groups.append(group)
             self._scene.addItem(group)
             self._scene.update()
+            group.update()
 
     def delete_node_group(self, group: NodeGroup):
         group.remove_self()
