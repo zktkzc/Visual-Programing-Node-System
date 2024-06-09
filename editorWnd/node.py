@@ -16,6 +16,7 @@ from editorWnd.config import EditorConfig, NodeConfig
 from editorWnd.node_port import NodePort, ExecInPort, ExecOutPort, ParamPort, OutputPort, NodeOutput, NodeInput, Pin
 
 if TYPE_CHECKING:
+    from editorWnd.group import NodeGroup
     from editorWnd.edge import NodeEdge
     from editorWnd.scene import Scene
 
@@ -80,6 +81,9 @@ class GraphicNode(QGraphicsItem):
 
         self.__init_ports()
 
+        # 所属的组
+        self._group: Union[NodeGroup, None] = None
+
     def __init_ports(self):
         self.__init_param_ports()
         self.__init_output_ports()
@@ -93,8 +97,9 @@ class GraphicNode(QGraphicsItem):
         for edge in self.edges.copy():
             edge.remove_self()
         # 删除自己
-        self._scene.removeItem(self)
-        self._scene.get_view().remove_node(self)
+        if self._scene is not None:
+            self._scene.removeItem(self)
+            self._scene.get_view().remove_node(self)
         self.update()
 
     def add_connected_node(self, node: GraphicNode, edge: NodeEdge):
@@ -253,6 +258,16 @@ class GraphicNode(QGraphicsItem):
         port.setPos(self._node_width - port.port_width - self._port_padding,
                     self._title_height + index * (port.port_icon_size + self._port_padding) + self._port_padding)
         port.add_to_parent_node(parent_node=self, scene=self._scene)
+
+    # ==========================================  group设置  =========================================================
+    def add_to_group(self, group: NodeGroup):
+        if self._group is not None and self._group != group:
+            self.remove_from_group()
+        self._group = group
+
+    def remove_from_group(self):
+        self._group.remove_node(self)
+        self._group = None
 
 
 class Node(GraphicNode):

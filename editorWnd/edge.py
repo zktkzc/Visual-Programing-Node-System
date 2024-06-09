@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Dict, Any, Union
 
 from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
@@ -14,6 +14,7 @@ from editorWnd.node_port import NodePort
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
+    from editorWnd.group import NodeGroup
 
 
 class NodeEdge(QGraphicsPathItem):
@@ -40,6 +41,15 @@ class NodeEdge(QGraphicsPathItem):
         self.update_edge_path()
         self.add_to_scene()
         self.init_edge_id()
+        self._group: Union[NodeGroup, None] = None
+
+    def add_to_group(self, group: NodeGroup):
+        if self._group is not None and self._group != group:
+            self.remove_from_group()
+        self._group = group
+
+    def remove_from_group(self):
+        self._group.remove_edge(self)
 
     def init_edge_id(self):
         self._edge_id = uuid.uuid1().int

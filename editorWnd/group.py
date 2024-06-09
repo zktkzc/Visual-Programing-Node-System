@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Dict, Any
+from typing import TYPE_CHECKING, List, Dict, Any, Union
 
 from PySide6.QtCore import QRectF, Qt, QPointF
-from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath, QMouseEvent
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsProxyWidget
+from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsProxyWidget
 
 from editorWnd.config import GroupConfig
 from editorWnd.edge import NodeEdge
@@ -66,6 +66,8 @@ class NodeGroup(QGraphicsItem):
         if len(self._items) > 0:
             for item in self._items:
                 if isinstance(item, GraphicNode):
+                    # 将节点添加到组中
+                    item.add_to_group(self)
                     node_pos = item.scenePos()
                     x = node_pos.x()
                     y = node_pos.y()
@@ -76,6 +78,8 @@ class NodeGroup(QGraphicsItem):
                     right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
                     top = y if y < top else top
                     bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
+                elif isinstance(item, NodeEdge):
+                    item.add_to_group(self)
         width = abs(right - left)
         height = abs(bottom - top)
         self.setPos(QPointF(left - self._group_padding, top - self._group_title_height - self._group_padding))
@@ -157,4 +161,10 @@ class NodeGroup(QGraphicsItem):
     def mouseDoubleClickEvent(self, event):
         self._title_item.label_double_clicked(event)
 
+    def remove_node(self, node: Union[Node, GraphicNode]):
+        if node in self._items:
+            self._items.remove(node)
 
+    def remove_edge(self, edge: NodeEdge):
+        if edge in self._items:
+            self._items.remove(edge)
