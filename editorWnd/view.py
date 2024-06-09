@@ -13,11 +13,11 @@ from PySide6.QtWidgets import QGraphicsView, QApplication, QGraphicsProxyWidget,
 
 from editorWnd.edge import NodeEdge, DraggingEdge, CuttingLine
 from editorWnd.env import ENV
+from editorWnd.group import NodeGroup
 from editorWnd.node import GraphicNode, Node
 from editorWnd.node_port import NodePort
 from editorWnd.nodes.ActionNode import BeginNode
 from editorWnd.widgets import NodeListWidget
-from editorWnd.group import NodeGroup
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene

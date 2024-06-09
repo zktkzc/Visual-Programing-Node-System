@@ -3,12 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Dict, Any
 
 from PySide6.QtCore import QRectF, Qt, QPointF
-from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath, QMouseEvent
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem, QGraphicsProxyWidget
 
 from editorWnd.config import GroupConfig
 from editorWnd.edge import NodeEdge
 from editorWnd.node import Node, GraphicNode
+from editorWnd.tools.tools import EditableLabel
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
@@ -24,16 +25,14 @@ class NodeGroup(QGraphicsItem):
         # ===============================================  标题 ===============================================
         self._group_title_height: float = 40
         self._group_title_padding: float = 5
-        self._title_pen = QPen(QColor(GroupConfig.GROUP_TITLE_COLOR))
         self._title_brush_color = QColor(GroupConfig.GROUP_TITLE_BACKGROUND_COLOR)
         self._title_brush_color.setAlphaF(0.8)
         self._title_brush = QBrush(self._title_brush_color)
         self._title_font = QFont(GroupConfig.GROUP_TITLE_FONT, GroupConfig.GROUP_TITLE_FONT_SIZE)
-        self._title_item = QGraphicsTextItem(self)
-        self._title_item.setPlainText(self._group_title)
-        self._title_item.setFont(self._title_font)
-        self._title_item.setDefaultTextColor(QColor(GroupConfig.GROUP_TITLE_COLOR))
-        self._title_item.setPos(self._group_title_padding, self._group_title_padding)
+        self._title_item = EditableLabel(text=title, group=self)
+        proxy = QGraphicsProxyWidget(self)
+        proxy.setWidget(self._title_item)
+        proxy.setPos(self._group_title_padding, self._group_title_padding)
         # =====================================================================================================
 
         # =============================================  选中的效果  ============================================
@@ -53,6 +52,9 @@ class NodeGroup(QGraphicsItem):
         self._group_min_height: float = self._group_title_height + self._group_padding * 2
 
         self.__init_group_rect()
+
+    def set_title(self, title: str):
+        self._group_title = title
 
     def __init_group_rect(self):
         """
@@ -151,3 +153,8 @@ class NodeGroup(QGraphicsItem):
             'edges': [item.get_edge_id() for item in self._items if isinstance(item, NodeEdge)]
         }
         return group
+
+    def mouseDoubleClickEvent(self, event):
+        self._title_item.label_double_clicked(event)
+
+
