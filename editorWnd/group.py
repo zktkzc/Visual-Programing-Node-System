@@ -1,24 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict, Any
 
 from PySide6.QtCore import QRectF, Qt, QPointF
 from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 
 from editorWnd.config import GroupConfig
+from editorWnd.edge import NodeEdge
+from editorWnd.node import Node, GraphicNode
 
 if TYPE_CHECKING:
     from editorWnd.scene import Scene
 
 
 class NodeGroup(QGraphicsItem):
-    def __init__(self, scene: Scene = None, items: List[QGraphicsItem] = None, group_width: float = 800,
-                 group_height: float = 400):
+    def __init__(self, title: str = '节点组', scene: Scene = None, items: List[QGraphicsItem] = None):
         super().__init__(None)
         self._scene: Scene = scene
         self._items = items
-        self._group_title: str = ''
+        self._group_title: str = title
 
         # ===============================================  标题 ===============================================
         self._group_title_height: float = 40
@@ -32,7 +33,7 @@ class NodeGroup(QGraphicsItem):
         self._title_item.setPlainText(self._group_title)
         self._title_item.setFont(self._title_font)
         self._title_item.setDefaultTextColor(QColor(GroupConfig.GROUP_TITLE_COLOR))
-        self._title_item.setPos(self._group_title_padding, 0)
+        self._title_item.setPos(self._group_title_padding, self._group_title_padding)
         # =====================================================================================================
 
         # =============================================  选中的效果  ============================================
@@ -48,18 +49,45 @@ class NodeGroup(QGraphicsItem):
         self.setZValue(-1)
 
         self._group_padding: float = 20
-        self._group_min_width: float = group_width + 2 * self._group_padding
-        self._group_min_height: float = group_height + self._group_title_height + self._group_padding * 2
-        self._group_pos = QPointF(-self._group_padding, -self._group_title_height - self._group_padding)
+        self._group_min_width: float = 2 * self._group_padding
+        self._group_min_height: float = self._group_title_height + self._group_padding * 2
+
+        self.__init_group_rect()
+
+    def __init_group_rect(self):
+        """
+        初始化组的宽度和高度
+        :return:
+        """
+        top, bottom, left, right = None, None, None, None
+        # 获取最上、最下、最左、最右的坐标
+        if len(self._items) > 0:
+            for item in self._items:
+                if isinstance(item, GraphicNode):
+                    node_pos = item.scenePos()
+                    x = node_pos.x()
+                    y = node_pos.y()
+                    if left is None:
+                        top, bottom, left, right = y, y + item.boundingRect().height(), x, x + item.boundingRect().width()
+                        continue
+                    left = x if x < left else left
+                    right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
+                    top = y if y < top else top
+                    bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
+        width = abs(right - left)
+        height = abs(bottom - top)
+        self.setPos(QPointF(left - self._group_padding, top - self._group_title_height - self._group_padding))
+        self._group_min_width += width
+        self._group_min_height += height
 
     def boundingRect(self):
-        return QRectF(self._group_pos.x(), self._group_pos.y(), self._group_min_width, self._group_min_height)
+        return QRectF(0, 0, self._group_min_width, self._group_min_height)
 
     def paint(self, painter, option, widget=...):
         # ============================================  内容背景  ============================================
         node_outline = QPainterPath()
         node_outline.addRoundedRect(
-            self._group_pos.x(), self._group_pos.y(),
+            0, 0,
             self._group_min_width, self._group_min_height,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
@@ -74,17 +102,17 @@ class NodeGroup(QGraphicsItem):
         title_outline = QPainterPath()
         title_outline.setFillRule(Qt.FillRule.WindingFill)
         title_outline.addRoundedRect(
-            self._group_pos.x(), self._group_pos.y(),
+            0, 0,
             self._group_min_width, self._group_title_height,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         title_outline.addRect(
-            self._group_pos.x(), self._group_pos.y() + self._group_title_height - GroupConfig.GROUP_RADIUS,
+            0, self._group_title_height - GroupConfig.GROUP_RADIUS,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         title_outline.addRect(
-            self._group_pos.x() + self._group_min_width - GroupConfig.GROUP_RADIUS,
-            self._group_pos.y() + self._group_title_height - GroupConfig.GROUP_RADIUS,
+            self._group_min_width - GroupConfig.GROUP_RADIUS,
+            self._group_title_height - GroupConfig.GROUP_RADIUS,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         painter.setPen(Qt.PenStyle.NoPen)
@@ -105,6 +133,8 @@ class NodeGroup(QGraphicsItem):
             if len(self._items) > 0:
                 for item in self._items:
                     item.setSelected(True)
+        for item in self._items:
+            item.setZValue(0)
         # ===================================================================================================
 
     def remove_self(self):
@@ -113,3 +143,11 @@ class NodeGroup(QGraphicsItem):
         self._scene.update()
         self._scene.get_view().update()
         self.update()
+
+    def to_string(self) -> Dict[str, Any]:
+        group = {
+            'title': self._group_title,
+            'nodes': [item.get_node_id() for item in self._items if isinstance(item, Node)],
+            'edges': [item.get_edge_id() for item in self._items if isinstance(item, NodeEdge)]
+        }
+        return group

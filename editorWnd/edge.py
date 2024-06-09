@@ -3,11 +3,12 @@
 """
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING, Dict, Any
 
 from PySide6.QtCore import Qt, QPointF, QPoint
 from PySide6.QtGui import QPen, QPainterPath, QPainter, QColor, QPolygonF
-from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect, QApplication
+from PySide6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsDropShadowEffect
 
 from editorWnd.node_port import NodePort
 
@@ -20,6 +21,7 @@ class NodeEdge(QGraphicsPathItem):
                  edge_color: str = '#ffffff', parent=None):
         super().__init__(parent)
 
+        self._edge_id: int = 0
         self.src_port = src_port
         self.dest_port = dest_port
         self._scene = scene
@@ -37,6 +39,16 @@ class NodeEdge(QGraphicsPathItem):
 
         self.update_edge_path()
         self.add_to_scene()
+        self.init_edge_id()
+
+    def init_edge_id(self):
+        self._edge_id = uuid.uuid1().int
+
+    def get_edge_id(self) -> int:
+        return self._edge_id
+
+    def set_edge_id(self, _id: int):
+        self._edge_id = _id
 
     def remove_self(self):
         self._scene.removeItem(self)
@@ -97,9 +109,10 @@ class NodeEdge(QGraphicsPathItem):
 
     def to_string(self) -> Dict[str, Any]:
         edge: Dict[str, Any] = {
-            'source_node_id': self.src_port.parent_node.node_id,
+            'edge_id': self._edge_id,
+            'source_node_id': self.src_port.parent_node._node_id,
             'source_port_index': self.src_port.get_port_index(),
-            'dest_node_id': self.dest_port.parent_node.node_id,
+            'dest_node_id': self.dest_port.parent_node._node_id,
             'dest_port_index': self.dest_port.get_port_index(),
         }
         return edge

@@ -104,16 +104,6 @@ class GroupCommand(QUndoCommand):
             for item in selected_items:
                 if isinstance(item, GraphicNode):
                     nodes.append(item)
-                    node_pos = item.scenePos()
-                    x = node_pos.x()
-                    y = node_pos.y()
-                    if left is None:
-                        top, bottom, left, right = y, y + item.boundingRect().height(), x, x + item.boundingRect().width()
-                        continue
-                    left = x if x < left else left
-                    right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
-                    top = y if y < top else top
-                    bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
                 elif isinstance(item, NodeEdge):
                     edges.append(item)
         if len(nodes) == 0:
@@ -124,9 +114,7 @@ class GroupCommand(QUndoCommand):
         items = []
         items.extend(nodes)
         items.extend(edges)
-        width = abs(right - left)
-        height = abs(bottom - top)
-        self._group = self._editor.view.add_node_group(pos=(left, top), items=items, w=width, h=height)
+        self._group = self._editor.view.add_node_group(items=items, title='节点组')
 
     def undo(self):
         self._editor.view.delete_node_group(self._group)

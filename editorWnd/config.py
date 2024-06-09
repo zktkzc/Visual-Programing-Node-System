@@ -37,7 +37,7 @@ class NodeConfig:
 
 class GroupConfig:
     GROUP_TITLE_BACKGROUND_COLOR = '#2db694'
-    GROUP_TITLE_COLOR = '#aaaaaa'
+    GROUP_TITLE_COLOR = '#ddd'
     GROUP_CONTENT_BACKGROUND_COLOR = '#333333'
     GROUP_TITLE_FONT_SIZE = 14
     GROUP_TITLE_FONT = 'Microsoft YaHei'

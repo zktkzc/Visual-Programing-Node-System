@@ -114,13 +114,16 @@ class View(QGraphicsView):
         self.node_list_widget.setVisible(False)
 
     def save_graph(self, filepath: str = 'graph.json'):
-        data: Dict[str, Any] = {'graph_name': '', 'time': '', 'nodes': [], 'edges': []}
+        data: Dict[str, Any] = {'graph_name': '', 'time': '', 'nodes': [], 'edges': [], 'groups': []}
         # node
         for node in self._nodes:
             data['nodes'].append(node.to_string())
         # edge
         for edge in self._edges:
             data['edges'].append(edge.to_string())
+        # group
+        for group in self._groups:
+            data['groups'].append(group.to_string())
         json_str = json.dumps(data)
         with open(filepath, 'w') as f:
             f.write(json_str)
@@ -133,6 +136,9 @@ class View(QGraphicsView):
             node.remove_self()
         for edge in self._edges.copy():
             edge.remove_self()
+        for group in self._groups.copy():
+            group.remove_self()
+            self._groups.remove(group)
         self._nodes = []
         self._edges = []
         self._scene.update()
@@ -146,6 +152,7 @@ class View(QGraphicsView):
             data = json.loads(f.read())
         nodes = data['nodes']
         edges = data['edges']
+        groups = data['groups']
         node_id_obj: Dict[int, Union[GraphicNode, Node]] = {}
         for node in nodes:
             # 获取节点类
@@ -162,12 +169,24 @@ class View(QGraphicsView):
                 port = node_obj.get_input_port(int(index))
                 port.set_widget_value(value)
 
+        edge_id_obj = {}
         for edge in edges:
+            edge_id = int(edge['edge_id'])
             source_node = node_id_obj[edge['source_node_id']]
             dest_node = node_id_obj[edge['dest_node_id']]
             source_port = source_node.get_output_port(edge['source_port_index'])
             dest_port = dest_node.get_input_port(edge['dest_port_index'])
-            self.add_node_edge(source_port, dest_port)
+            edge_obj = self.add_node_edge(source_port, dest_port)
+            edge_obj.set_edge_id(edge_id)
+            edge_id_obj[edge_id] = edge_obj
+
+        for group in groups:
+            items = []
+            title = group['title']
+            items.extend([node_id_obj[node_id] for node_id in group['nodes']])
+            items.extend([edge_id_obj[edge_id] for edge_id in group['edges']])
+            self.add_node_group(items=items, title=title)
+
         self.set_saved_path(filepath)
 
         print('视图: 数据加载成功 ->', filepath)
@@ -478,14 +497,12 @@ class View(QGraphicsView):
             self._nodes.remove(node)
 
     # ==================================================  组操作  =======================================================
-    def add_node_group(self, pos: Tuple[float, float] = (0, 0), items: List[QGraphicsItem] = None,
-                       w: float = 200, h: float = 100) -> NodeGroup:
+    def add_node_group(self, items: List[QGraphicsItem] = None, title: str = '节点组') -> NodeGroup:
         """
         添加一个新的节点组
         :return:
         """
-        group = NodeGroup(scene=self._scene, items=items, group_width=w, group_height=h)
-        group.setPos(pos[0], pos[1])
+        group = NodeGroup(scene=self._scene, items=items, title=title)
         self._groups.append(group)
         return group
 

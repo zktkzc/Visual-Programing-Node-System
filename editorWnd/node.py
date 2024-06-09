@@ -268,7 +268,7 @@ class Node(GraphicNode):
         self._output_data_ready: bool = False
 
         self._session_id: int = 0
-        self.node_id: int = uuid.uuid1().int
+        self._node_id: int = uuid.uuid1().int
 
         self.is_validate()
 
@@ -279,7 +279,10 @@ class Node(GraphicNode):
         super().__init__(title=self.node_title, param_ports=self.in_ports, output_ports=self.out_ports, is_pure=True)
 
     def set_node_id(self, node_id: int):
-        self.node_id = node_id
+        self._node_id = node_id
+
+    def get_node_id(self) -> int:
+        return self._node_id
 
     @abc.abstractmethod
     def run_node(self):
@@ -377,7 +380,7 @@ class Node(GraphicNode):
 
     def to_string(self) -> Dict[str, Any]:
         node: Dict[str, Any] = {
-            'id': self.node_id,
+            'id': self._node_id,
             'class': self.__class__.__name__,
             'module': self.__class__.__module__,
             'pos': (self.scenePos().x(), self.scenePos().y()),
