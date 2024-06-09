@@ -106,3 +106,6 @@ class NodeGroup(QGraphicsItem):
                 for item in self._items:
                     item.setSelected(True)
         # ===================================================================================================
+
+    def remove_self(self):
+        self._scene.removeItem(self)

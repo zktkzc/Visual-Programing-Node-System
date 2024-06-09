@@ -30,6 +30,7 @@ class View(QGraphicsView):
         self._scene.set_view(self)
         self._nodes: List[Union[GraphicNode, Node]] = []
         self._edges: List[NodeEdge] = []
+        self._groups: List[NodeGroup] = []
         self.setScene(self._scene)
         self._session_id: int = 0
         self.setRenderHints(
@@ -478,10 +479,18 @@ class View(QGraphicsView):
 
     # ==================================================  组操作  =======================================================
     def add_node_group(self, pos: Tuple[float, float] = (0, 0), items: List[QGraphicsItem] = None,
-                       w: float = 200, h: float = 100):
+                       w: float = 200, h: float = 100) -> NodeGroup:
         """
         添加一个新的节点组
         :return:
         """
         group = NodeGroup(scene=self._scene, items=items, group_width=w, group_height=h)
         group.setPos(pos[0], pos[1])
+        self._groups.append(group)
+        return group
+
+    def delete_node_group(self, group: NodeGroup):
+        group.remove_self()
+        if len(self._groups) > 0:
+            self._groups.remove(group)
+    # ==================================================================================================================

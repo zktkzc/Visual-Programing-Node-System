@@ -13,7 +13,7 @@ from PySide6.QtGui import QAction, QKeySequence, QUndoStack, QUndoCommand, QGuiA
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication, \
     QGraphicsItem
 
-from editorWnd.command import CutCommand, PasteCommand, DelCommand
+from editorWnd.command import CutCommand, PasteCommand, DelCommand, GroupCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
 from editorWnd.node import GraphicNode, Node
@@ -429,36 +429,5 @@ class Editor(QWidget):
         将选中的元素添加到组中
         :return:
         """
-        # 获取选中的元素
-        selected_items = self.view.get_selected_items()
-        nodes: List[Union[GraphicNode, Node]] = []
-        edges: List[NodeEdge] = []
-        top, bottom, left, right = None, None, None, None
-        # 获取最上、最下、最左、最右的坐标
-        if len(selected_items) > 0:
-            for item in selected_items:
-                if isinstance(item, GraphicNode):
-                    nodes.append(item)
-                    node_pos = item.scenePos()
-                    x = node_pos.x()
-                    y = node_pos.y()
-                    if left is None:
-                        top, bottom, left, right = y, y + item.boundingRect().height(), x, x + item.boundingRect().width()
-                        continue
-                    left = x if x < left else left
-                    right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
-                    top = y if y < top else top
-                    bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
-                elif isinstance(item, NodeEdge):
-                    edges.append(item)
-        if len(nodes) == 0:
-            return
-        for edge in edges.copy():
-            if edge.src_port.parent_node not in nodes or edge.dest_port.parent_node not in nodes:
-                edges.remove(edge)
-        items = []
-        items.extend(nodes)
-        items.extend(edges)
-        width = abs(right - left)
-        height = abs(bottom - top)
-        self.view.add_node_group(pos=(left, top), items=items, w=width, h=height)
+        command = GroupCommand(self)
+        self.add_action_to_stack('group items', command)

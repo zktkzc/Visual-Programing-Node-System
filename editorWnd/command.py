@@ -10,6 +10,7 @@ from editorWnd.node import Node, GraphicNode
 
 if TYPE_CHECKING:
     from editorWnd.editor import Editor
+    from editorWnd.group import NodeGroup
 
 
 class CutCommand(QUndoCommand):
@@ -79,3 +80,48 @@ class DelCommand(QUndoCommand):
                 item.remove_self()
             elif isinstance(item, NodeEdge):
                 item.remove_self()
+
+
+class GroupCommand(QUndoCommand):
+    def __init__(self, editor: Editor):
+        super().__init__()
+        self._editor = editor
+        self._group: Union[NodeGroup, None] = None
+
+    def redo(self):
+        # 获取选中的元素
+        selected_items = self._editor.view.get_selected_items()
+        nodes: List[Union[GraphicNode, Node]] = []
+        edges: List[NodeEdge] = []
+        top, bottom, left, right = None, None, None, None
+        # 获取最上、最下、最左、最右的坐标
+        if len(selected_items) > 0:
+            for item in selected_items:
+                if isinstance(item, GraphicNode):
+                    nodes.append(item)
+                    node_pos = item.scenePos()
+                    x = node_pos.x()
+                    y = node_pos.y()
+                    if left is None:
+                        top, bottom, left, right = y, y + item.boundingRect().height(), x, x + item.boundingRect().width()
+                        continue
+                    left = x if x < left else left
+                    right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
+                    top = y if y < top else top
+                    bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
+                elif isinstance(item, NodeEdge):
+                    edges.append(item)
+        if len(nodes) == 0:
+            return
+        for edge in edges.copy():
+            if edge.src_port.parent_node not in nodes or edge.dest_port.parent_node not in nodes:
+                edges.remove(edge)
+        items = []
+        items.extend(nodes)
+        items.extend(edges)
+        width = abs(right - left)
+        height = abs(bottom - top)
+        self._group = self._editor.view.add_node_group(pos=(left, top), items=items, w=width, h=height)
+
+    def undo(self):
+        self._editor.view.delete_node_group(self._group)
