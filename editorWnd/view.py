@@ -477,10 +477,11 @@ class View(QGraphicsView):
             self._nodes.remove(node)
 
     # ==================================================  组操作  =======================================================
-    def add_node_group(self, pos: Tuple[float, float] = (0, 0), items: List[QGraphicsItem] = None):
+    def add_node_group(self, pos: Tuple[float, float] = (0, 0), items: List[QGraphicsItem] = None,
+                       w: float = 200, h: float = 100):
         """
         添加一个新的节点组
         :return:
         """
-        group = NodeGroup(scene=self._scene, items=items)
+        group = NodeGroup(scene=self._scene, items=items, group_width=w, group_height=h)
         group.setPos(pos[0], pos[1])

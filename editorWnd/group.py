@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, List
 
-from PySide6.QtCore import QRectF, Qt
+from PySide6.QtCore import QRectF, Qt, QPointF
 from PySide6.QtGui import QPen, QColor, QBrush, QFont, QPainterPath
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 
@@ -19,8 +19,6 @@ class NodeGroup(QGraphicsItem):
         self._scene: Scene = scene
         self._items = items
         self._group_title: str = ''
-        self._group_min_width: float = group_width
-        self._group_min_height: float = group_height
 
         # ===============================================  标题 ===============================================
         self._group_title_height: float = 40
@@ -49,14 +47,19 @@ class NodeGroup(QGraphicsItem):
         )
         self.setZValue(-1)
 
+        self._group_padding: float = 20
+        self._group_min_width: float = group_width + 2 * self._group_padding
+        self._group_min_height: float = group_height + self._group_title_height + self._group_padding * 2
+        self._group_pos = QPointF(-self._group_padding, -self._group_title_height - self._group_padding)
+
     def boundingRect(self):
-        return QRectF(0, 0, self._group_min_width, self._group_min_height)
+        return QRectF(self._group_pos.x(), self._group_pos.y(), self._group_min_width, self._group_min_height)
 
     def paint(self, painter, option, widget=...):
         # ============================================  内容背景  ============================================
         node_outline = QPainterPath()
         node_outline.addRoundedRect(
-            0, 0,
+            self._group_pos.x(), self._group_pos.y(),
             self._group_min_width, self._group_min_height,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
@@ -71,17 +74,17 @@ class NodeGroup(QGraphicsItem):
         title_outline = QPainterPath()
         title_outline.setFillRule(Qt.FillRule.WindingFill)
         title_outline.addRoundedRect(
-            0, 0,
+            self._group_pos.x(), self._group_pos.y(),
             self._group_min_width, self._group_title_height,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         title_outline.addRect(
-            0, self._group_title_height - GroupConfig.GROUP_RADIUS,
+            self._group_pos.x(), self._group_pos.y() + self._group_title_height - GroupConfig.GROUP_RADIUS,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         title_outline.addRect(
-            self._group_min_width - GroupConfig.GROUP_RADIUS,
-            self._group_title_height - GroupConfig.GROUP_RADIUS,
+            self._group_pos.x() + self._group_min_width - GroupConfig.GROUP_RADIUS,
+            self._group_pos.y() + self._group_title_height - GroupConfig.GROUP_RADIUS,
             GroupConfig.GROUP_RADIUS, GroupConfig.GROUP_RADIUS
         )
         painter.setPen(Qt.PenStyle.NoPen)

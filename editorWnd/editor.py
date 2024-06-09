@@ -141,6 +141,7 @@ class VisualGraphWindow(QMainWindow):
     # =================================================  运行操作  ======================================================
     def __run(self):
         self.editor.view.run_graph()
+
     # ==================================================================================================================
 
     # ==================================================  编辑操作  ======================================================
@@ -431,8 +432,24 @@ class Editor(QWidget):
         # 获取选中的元素
         selected_items = self.view.get_selected_items()
         nodes: List[Union[GraphicNode, Node]] = []
-        for item in selected_items:
-            if isinstance(item, GraphicNode):
-                nodes.append(item)
-        mouse_pos = self.map_mouse_to_scene()
-        self.view.add_node_group(pos=(mouse_pos.x(), mouse_pos.y()), items=nodes)
+        top, bottom, left, right = None, None, None, None
+        # 获取最上、最下、最左、最右的坐标
+        if len(selected_items) > 0:
+            for item in selected_items:
+                if isinstance(item, GraphicNode):
+                    nodes.append(item)
+                    node_pos = item.scenePos()
+                    x = node_pos.x()
+                    y = node_pos.y()
+                    if left is None:
+                        top, bottom, left, right = y, y + item.boundingRect().height(), x, x + item.boundingRect().width()
+                        continue
+                    left = x if x < left else left
+                    right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
+                    top = y if y < top else top
+                    bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
+        if len(nodes) == 0:
+            return
+        width = abs(right - left)
+        height = abs(bottom - top)
+        self.view.add_node_group(pos=(left, top), items=nodes, w=width, h=height)
