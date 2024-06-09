@@ -69,6 +69,18 @@ GLOBAL_STYLESHEET = '''
         margin: 0px;
         padding: 0px;
         border: none;
+        color: #c4c4c4;
+    }
+    
+    QPushButton {
+        background-color: #313131;
+        border: 1px solid #101010;
+        width: 100px;
+        height: 25px;
+    }
+    
+    QPushButton:hover {
+        background-color: #414141;
     }
     
     QTabBar::tab {

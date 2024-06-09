@@ -11,7 +11,7 @@ from typing import List, Union, Dict, Any
 from PySide6.QtCore import QPointF
 from PySide6.QtGui import QAction, QKeySequence, QUndoStack, QUndoCommand, QGuiApplication, QCursor
 from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTabWidget, QLayout, QApplication, \
-    QGraphicsItem
+    QGraphicsItem, QMessageBox
 
 from editorWnd.command import CutCommand, PasteCommand, DelCommand, GroupCommand
 from editorWnd.edge import NodeEdge
@@ -116,6 +116,9 @@ class VisualGraphWindow(QMainWindow):
         run_menu.addAction(self.run_action)
 
         help_menu = menubar.addMenu('帮助(&H)')
+        self.about_action = QAction(text='&关于', parent=self)
+        self.about_action.triggered.connect(self.__about)
+        help_menu.addAction(self.about_action)
 
         # 上次打开的路径
         self._last_open_path: str = os.getcwd()
@@ -138,6 +141,11 @@ class VisualGraphWindow(QMainWindow):
         self._is_cut: bool = False
 
         self.show()
+
+    # =================================================  帮助操作  ======================================================
+    def __about(self):
+        QMessageBox.information(self, '关于', '可视化编程编辑器 V1.0\n作者: tkzc00')
+    # =================================================================================================================
 
     # =================================================  运行操作  ======================================================
     def __run(self):
