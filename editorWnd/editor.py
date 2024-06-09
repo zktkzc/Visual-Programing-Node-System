@@ -432,6 +432,7 @@ class Editor(QWidget):
         # 获取选中的元素
         selected_items = self.view.get_selected_items()
         nodes: List[Union[GraphicNode, Node]] = []
+        edges: List[NodeEdge] = []
         top, bottom, left, right = None, None, None, None
         # 获取最上、最下、最左、最右的坐标
         if len(selected_items) > 0:
@@ -448,8 +449,16 @@ class Editor(QWidget):
                     right = x + item.boundingRect().width() if x + item.boundingRect().width() > right else right
                     top = y if y < top else top
                     bottom = y + item.boundingRect().height() if y + item.boundingRect().height() > bottom else bottom
+                elif isinstance(item, NodeEdge):
+                    edges.append(item)
         if len(nodes) == 0:
             return
+        for edge in edges.copy():
+            if edge.src_port.parent_node not in nodes or edge.dest_port.parent_node not in nodes:
+                edges.remove(edge)
+        items = []
+        items.extend(nodes)
+        items.extend(edges)
         width = abs(right - left)
         height = abs(bottom - top)
-        self.view.add_node_group(pos=(left, top), items=nodes, w=width, h=height)
+        self.view.add_node_group(pos=(left, top), items=items, w=width, h=height)
