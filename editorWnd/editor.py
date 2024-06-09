@@ -106,8 +106,20 @@ class VisualGraphWindow(QMainWindow):
         self.group_action.setShortcut(QKeySequence('Ctrl+G'))
         self.group_action.triggered.connect(self.__create_group)
         edit_menu.addAction(self.group_action)
+        self.ungroup_action = QAction(text='&解组', parent=self)
+        self.ungroup_action.setShortcut(QKeySequence('Ctrl+Shift+G'))
+        self.ungroup_action.triggered.connect(self.__ungroup)
+        edit_menu.addAction(self.ungroup_action)
 
         selection_menu = menubar.addMenu('选择(&S)')
+        self.select_all_action = QAction(text='&全选', parent=self)
+        self.select_all_action.setShortcut(QKeySequence('Ctrl+A'))
+        self.select_all_action.triggered.connect(self.__select_all_items)
+        selection_menu.addAction(self.select_all_action)
+        self.unselect_all_action = QAction(text='&取消全选', parent=self)
+        self.unselect_all_action.setShortcut(QKeySequence('Ctrl+Shift+A'))
+        self.unselect_all_action.triggered.connect(self.__unselect_all)
+        selection_menu.addAction(self.unselect_all_action)
 
         run_menu = menubar.addMenu('运行(&R)')
         self.run_action = QAction(text='&运行', parent=self)
@@ -142,6 +154,16 @@ class VisualGraphWindow(QMainWindow):
 
         self.show()
 
+    # =================================================  选择操作  ======================================================
+    def __select_all_items(self):
+        for item in self.editor.view.items():
+            item.setSelected(True)
+
+    def __unselect_all(self):
+        for item in self.editor.view.get_selected_items():
+            item.setSelected(False)
+    # ==================================================================================================================
+
     # =================================================  帮助操作  ======================================================
     def __about(self):
         QMessageBox.information(self, '关于', '可视化编程编辑器 V1.0\n作者: tkzc00')
@@ -150,12 +172,14 @@ class VisualGraphWindow(QMainWindow):
     # =================================================  运行操作  ======================================================
     def __run(self):
         self.editor.view.run_graph()
-
     # ==================================================================================================================
 
     # ==================================================  编辑操作  ======================================================
     def __create_group(self):
         self.editor.group_items()
+
+    def __ungroup(self):
+        pass
 
     def __del_selected_items(self):
         self.editor.del_items()
