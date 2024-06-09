@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QWidget, QBoxLayout, QMainWindow, QFileDialog, QTa
 from editorWnd.command import CutCommand, PasteCommand, DelCommand
 from editorWnd.edge import NodeEdge
 from editorWnd.env import ENV
-from editorWnd.node import GraphicNode
+from editorWnd.node import GraphicNode, Node
 from editorWnd.scene import Scene
 from editorWnd.view import View
 
@@ -103,6 +103,7 @@ class VisualGraphWindow(QMainWindow):
         edit_menu.addAction(self.comment_action)
         self.group_action = QAction(text='&创建组', parent=self)
         self.group_action.setShortcut(QKeySequence('Ctrl+G'))
+        self.group_action.triggered.connect(self.__create_group)
         edit_menu.addAction(self.group_action)
 
         selection_menu = menubar.addMenu('选择(&S)')
@@ -141,7 +142,11 @@ class VisualGraphWindow(QMainWindow):
     def __run(self):
         self.editor.view.run_graph()
     # ==================================================================================================================
+
     # ==================================================  编辑操作  ======================================================
+    def __create_group(self):
+        self.editor.group_items()
+
     def __del_selected_items(self):
         self.editor.del_items()
 
@@ -188,7 +193,9 @@ class VisualGraphWindow(QMainWindow):
                 print('编辑器: 剪切板中没有可粘贴的节点和连接边')
         except ValueError:
             print('编辑器: 剪切板中没有可粘贴的节点和连接边')
+
     # ==================================================================================================================
+
     # ===============================================  文件操作  =========================================================
     def __quit(self):
         QApplication.quit()
@@ -320,6 +327,7 @@ class VisualGraphWindow(QMainWindow):
         self._last_open_path = os.path.dirname(filepath)
         self.__add_to_recent_files(filepath)
         self.__record_file_opened(filepath, self.tab_index)
+
     # ==================================================================================================================
 
     def __center(self):
@@ -337,7 +345,6 @@ class Editor(QWidget):
         ENV.init_node_env()
         self.__setup_editor()
         self.undo_stack = QUndoStack()
-        self.view.add_node_group()
 
     def undo_edit(self):
         self.undo_stack.undo()
@@ -415,3 +422,17 @@ class Editor(QWidget):
 
     def readd_edge(self, edge: NodeEdge):
         self.view.readd_edge(edge)
+
+    def group_items(self):
+        """
+        将选中的元素添加到组中
+        :return:
+        """
+        # 获取选中的元素
+        selected_items = self.view.get_selected_items()
+        nodes: List[Union[GraphicNode, Node]] = []
+        for item in selected_items:
+            if isinstance(item, GraphicNode):
+                nodes.append(item)
+        mouse_pos = self.map_mouse_to_scene()
+        self.view.add_node_group(pos=(mouse_pos.x(), mouse_pos.y()), items=nodes)
