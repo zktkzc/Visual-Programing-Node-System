@@ -1,6 +1,8 @@
 import os
 import sys
 
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from editorWnd.editor import VisualGraphWindow
@@ -117,6 +119,9 @@ if __name__ == '__main__':
     # 把运行目录切换到项目根目录
     os.chdir(os.path.dirname(os.path.dirname(__file__)))
     app = QApplication([])
+    icon = QIcon()
+    icon.addFile('assets/app.ico', QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+    app.setWindowIcon(icon)
     window = VisualGraphWindow()
     window.setStyleSheet(GLOBAL_STYLESHEET)
     sys.exit(app.exec())
