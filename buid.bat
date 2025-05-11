@@ -1,11 +1,11 @@
 @echo off
-echo ÇÐ»»»·¾³
+echo åˆ‡æ¢çŽ¯å¢ƒ
 call conda activate python38
-echo ¿ªÊ¼Ö´ÐÐpyintaller´ò°üÃüÁî
-pyinstaller editorWnd\main.py -n ±à³Ì¿ÉÊÓ»¯±à¼­Æ÷ --add-data editorWnd:editorWnd --add-data assets:assets --add-data ×¢²áico.bat:. --add-data È¡Ïû×¢²áico.bat:. -y --clean -D -i assets\icon.ico --contents-directory .
-echo ¸´ÖÆ´ò°üºóµÄÎÄ¼þ¼Ð
+echo å¼€å§‹æ‰§è¡Œpyintalleræ‰“åŒ…å‘½ä»¤
+pyinstaller editorWnd\main.py -n ç¼–ç¨‹å¯è§†åŒ–ç¼–è¾‘å™¨ --add-data editorWnd:editorWnd --add-data assets:assets --add-data æ³¨å†Œico.bat:. --add-data å–æ¶ˆæ³¨å†Œico.bat:. -y --clean -D -i assets\icon.ico --contents-directory .
+echo å¤åˆ¶æ‰“åŒ…åŽçš„æ–‡ä»¶å¤¹
 xcopy /S /Y dist ..
-echo É¾³ý´ò°ü´´½¨µÄÁÙÊ±ÎÄ¼þºÍÎÄ¼þ¼Ð
+echo åˆ é™¤æ‰“åŒ…åˆ›å»ºçš„ä¸´æ—¶æ–‡ä»¶å’Œæ–‡ä»¶å¤¹
 del /Q *.spec
 rmdir /Q /S dist
 rmdir /Q /S build 2> nul
