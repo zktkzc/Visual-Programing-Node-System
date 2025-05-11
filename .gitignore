@@ -1,3 +1,7 @@
 .idea
 *.iml
 *.json
+dist
+build
+*.spec
+__pycache__
