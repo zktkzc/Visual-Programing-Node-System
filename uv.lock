@@ -165,12 +165,30 @@ name = "visual-programing-node-system"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "altgraph" },
+    { name = "packaging" },
+    { name = "pefile" },
     { name = "pyinstaller" },
+    { name = "pyinstaller-hooks-contrib" },
     { name = "pyside6" },
+    { name = "pyside6-addons" },
+    { name = "pyside6-essentials" },
+    { name = "pywin32-ctypes" },
+    { name = "setuptools" },
+    { name = "shiboken6" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "pyinstaller", specifier = ">=6.13.0" },
-    { name = "pyside6", specifier = ">=6.9.0" },
+    { name = "altgraph", specifier = "==0.17.4" },
+    { name = "packaging", specifier = "==25.0" },
+    { name = "pefile", specifier = "==2023.2.7" },
+    { name = "pyinstaller", specifier = "==6.13.0" },
+    { name = "pyinstaller-hooks-contrib", specifier = "==2025.4" },
+    { name = "pyside6", specifier = "==6.9.0" },
+    { name = "pyside6-addons", specifier = "==6.9.0" },
+    { name = "pyside6-essentials", specifier = "==6.9.0" },
+    { name = "pywin32-ctypes", specifier = "==0.2.3" },
+    { name = "setuptools", specifier = "==80.4.0" },
+    { name = "shiboken6", specifier = "==6.9.0" },
 ]
